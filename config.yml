@@ -69,6 +69,12 @@ amp:
     __TOOL_CONTENT__
 
     After you have completed the code review process:
+
+    Leave a general comment summarizing the review, including:
+    * A brief summary of the changes reviewed
+    * List out critical issues and blockers that need to be addressed
+    * Any high-level feedback or suggestions
+
     IMPORTANT: If you find any issues, include all of them in a JSON block at the end with the following format:
     ```json
     [

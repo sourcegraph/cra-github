@@ -104,9 +104,14 @@ npm run mcp:build
 
 The server uses the same configuration as the main application. Make sure your `config.yml` and environment variables are properly set:
 
+### Environment Variables
+- `GITHUB_APP_ID` - GitHub App ID
+- `GITHUB_APP_PRIVATE_KEY` or `GITHUB_APP_PRIVATE_KEY_PATH` - GitHub App private key
 - `GITHUB_BASE_URL` - GitHub API URL (default: https://api.github.com)
-- `GITHUB_TOKEN` - GitHub access token
 - `MCP_AUTH_TOKEN` - Token for MCP server authentication (optional)
+
+### GitHub App Integration
+The MCP server works with GitHub App installations for authentication. When accessing repositories, it uses the GitHub App's installation tokens rather than personal access tokens.
 
 ## Integration with AI Agents
 
@@ -131,6 +136,25 @@ Add to your Cursor settings:
 }
 ```
 
+### Amp Integration
+
+The MCP server is automatically configured for use with Amp in `config.yml`:
+
+```yaml
+amp:
+  settings:
+    amp.mcpServers:
+      github:
+        command: "sh"
+        args: ["-c", "cd ${GITHUB_APP_CWD} && pnpm run mcp"]
+        env:
+          GITHUB_APP_CWD: "${GITHUB_APP_CWD}"
+          GITHUB_APP_ID: "${GITHUB_APP_ID}"
+          GITHUB_APP_PRIVATE_KEY_PATH: "${GITHUB_APP_PRIVATE_KEY_PATH}"
+```
+
+This allows Amp to automatically use the GitHub MCP tools during code reviews.
+
 ### Example Usage in Prompts
 
 ```
@@ -145,6 +169,18 @@ Owner: octocat
 Repo: Hello-World
 PR Number: 123
 ```
+
+### Code Review Workflow
+
+The tools are designed to work together in a typical code review workflow:
+
+1. **Get Context**: `get_pr_info` to fetch PR details and optionally the diff
+2. **Check Existing Feedback**: `get_pr_comments` to see what's already been discussed
+3. **Leave Feedback**: 
+   - `leave_inline_comment` for specific line-level issues
+   - `leave_general_comment` for overall observations
+4. **Update Status**: `create_check_run` to mark the review as complete
+5. **Re-trigger if Needed**: `trigger_review` to restart the process
 
 ## Development
 
