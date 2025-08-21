@@ -22,7 +22,7 @@ app.use('*', prettyJSON());
 // Initialize components
 const config: Config = getConfig();
 const queueConfig = config.queue;
-const reviewQueue = new ReviewJobQueue(queueConfig.max_queue_size);
+const reviewQueue = new ReviewJobQueue(queueConfig.max_queue_size, queueConfig.max_workers);
 
 // Set the review queue for the github routes
 setReviewQueue(reviewQueue);
