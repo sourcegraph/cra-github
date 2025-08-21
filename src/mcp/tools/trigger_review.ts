@@ -15,7 +15,7 @@ export async function triggerReview(
   githubClient: GitHubClient
 ): Promise<{ success: boolean; review_id?: string; check_run_id?: number; error?: string }> {
   try {
-    const { owner, repo, pr_number, commit_sha, force = false } = args;
+    const { owner, repo, pr_number, commit_sha } = args;
 
     // Get PR info to get the latest commit if not provided
     const prInfo = await githubClient.getPRInfo(owner, repo, pr_number);

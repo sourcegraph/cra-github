@@ -4,7 +4,6 @@ import jwt from 'jsonwebtoken';
 import { readFileSync } from 'fs';
 import { GitHubOAuthService } from '../github/oauth.js';
 import { InstallationStore } from '../github/installation-store.js';
-import { WebhookManager } from '../github/webhook-manager.js';
 import { GitHubInstallation } from '../types/installation.js';
 import { GitHubPullRequestEvent } from '../github/types.js';
 import { GitHubClient } from '../github/client.js';
@@ -15,7 +14,6 @@ import { processReview } from '../github/process-review.js';
 const github = new Hono();
 const oauthService = new GitHubOAuthService();
 const installationStore = new InstallationStore();
-const webhookManager = new WebhookManager();
 
 // Initialize config and client for webhook route
 const config: Config = getConfig();
@@ -379,7 +377,6 @@ github.get('/callback', async (c) => {
   try {
     const installationId = c.req.query('installation_id');
     const setupAction = c.req.query('setup_action');
-    const state = c.req.query('state'); // TODO: Validate state parameter
     const error = c.req.query('error');
 
     if (error) {

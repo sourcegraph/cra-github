@@ -1,6 +1,5 @@
 import { GitHubInstallation } from '../types/installation.js';
 import { readFileSync, writeFileSync, existsSync } from 'fs';
-import { join } from 'path';
 
 /**
  * Simple file-based storage for installations
@@ -66,7 +65,7 @@ export class InstallationStore {
    * Get installation by repository ID
    */
   async getInstallationByRepositoryId(repositoryId: number): Promise<GitHubInstallation | null> {
-    let matchingInstallations: GitHubInstallation[] = [];
+    const matchingInstallations: GitHubInstallation[] = [];
     
     for (const installation of this.installations.values()) {
       if (installation.repositoryId === repositoryId) {

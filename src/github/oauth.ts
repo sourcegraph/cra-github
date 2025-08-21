@@ -1,4 +1,4 @@
-import { GitHubInstallation, OAuthTokenResponse, GitHubUser } from '../types/installation.js';
+import { OAuthTokenResponse, GitHubUser } from '../types/installation.js';
 
 export class GitHubOAuthService {
   private clientId: string;
