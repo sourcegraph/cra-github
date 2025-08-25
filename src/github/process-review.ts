@@ -5,10 +5,11 @@ import { CHECK_STATUS, CHECK_CONCLUSION, PRDetails, GitHubPullRequestEvent } fro
 
 export async function processReview(
     jobId: string, 
-    githubClient: GitHubClient, 
+    installationId: number, 
     payload: GitHubPullRequestEvent
   ): Promise<void> {
     const config = await getConfig();
+    const githubClient = GitHubClient.forInstallation(config, installationId);
 
     try {
       // Extract PR information
@@ -61,7 +62,7 @@ export async function processReview(
       const prDetailsContent = `Repository: ${payload.repository.full_name}, PR Number: ${prDetails.pr_number}, Commit SHA: ${prDetails.commit_sha}, PR URL: ${prDetails.pr_url}`;
 
       console.log(`Calling reviewDiff() for job ${jobId}`);
-      const reviewResult = await reviewDiff(diffContent, prDetailsContent);
+      const reviewResult = await reviewDiff(diffContent, prDetailsContent, installationId);
       console.log(`Review completed for job ${jobId}`);
 
       // Update check run with success

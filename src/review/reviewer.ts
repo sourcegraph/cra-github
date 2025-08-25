@@ -6,7 +6,7 @@ import { Config, getConfig } from "../config.js";
 import { newThread, execute } from "../amp.js";
 
 
-export const reviewDiff = async (diffContent: string, mrDetailsContent: string) => {
+export const reviewDiff = async (diffContent: string, mrDetailsContent: string, installationId: number) => {
 
     // Get config
     const config: Config = getConfig();
@@ -42,9 +42,22 @@ export const reviewDiff = async (diffContent: string, mrDetailsContent: string) 
       // Write prompt to file
       writeFileSync(promptFilePath, promptContent, 'utf8');
 
-      // Write settings to file
-      const settings = ampConfig.settings;
-      writeFileSync(settingsFilePath, JSON.stringify(settings || {}, null, 2), 'utf8');
+      // Write settings to file with installation ID
+      const settings = { ...ampConfig.settings };
+      
+      // Ensure GitHub MCP server environment exists and set installation ID
+      settings['amp.mcpServers'] = {
+        ...settings['amp.mcpServers'],
+        github: {
+          ...settings['amp.mcpServers']?.github,
+          env: {
+            ...settings['amp.mcpServers']?.github?.env,
+            GITHUB_INSTALLATION_ID: installationId.toString(),
+          }
+        }
+      };
+      
+      writeFileSync(settingsFilePath, JSON.stringify(settings, null, 2), 'utf8');
 
       const threadId = await newThread(tempDir);
       const result = await execute({

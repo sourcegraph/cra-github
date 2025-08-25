@@ -89,7 +89,9 @@ app.post('/test/review', async (c) => {
 
     const prDetailsContent = `Repository: ${prDetails.repository_full_name}, PR Number: ${prDetails.pr_number}, Commit SHA: ${prDetails.commit_sha}, PR URL: ${prDetails.pr_url}`;
     
-    const result = await reviewDiff(diffContent, prDetailsContent);
+    // For testing purposes, use a dummy installation ID
+    const testInstallationId = 12345;
+    const result = await reviewDiff(diffContent, prDetailsContent, testInstallationId);
     
     return c.json({
       success: true,

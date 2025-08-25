@@ -1,7 +1,6 @@
 import { Hono } from 'hono';
 import { v4 as uuidv4 } from 'uuid';
 import { GitHubPullRequestEvent } from '../github/types.js';
-import { GitHubClient } from '../github/client.js';
 import { QueueFullError, ReviewJobQueue } from '../review/review-queue.js';
 import { Config, getConfig } from '../config.js';
 import { processReview } from '../github/process-review.js';
@@ -62,21 +61,20 @@ async function handlePullRequestEvent(payload: GitHubPullRequestEvent) {
   const installationId = (payload as any).installation?.id;
   console.log('Installation ID from webhook:', installationId);
 
-  // Use installation-specific client
-  const client = installationId
-    ? GitHubClient.forInstallation(config, installationId)
-    : new GitHubClient(config);
-
   if (!reviewQueue) {
     throw new Error('Review queue not initialized');
   }
 
+  if (!installationId) {
+    throw new Error('Installation ID is required for review processing');
+  }
+
   // Enqueue review job
   const processReviewCallback = async (jobId: string) => {
-    await processReview(jobId, client, payload);
+    await processReview(jobId, installationId, payload);
   };
-
-  const jobId = reviewQueue.enqueueReview(payload.pull_request.number, processReviewCallback);
+  
+  const jobId = reviewQueue.enqueueReview(payload.pull_request.number, installationId, processReviewCallback);
 
   // Return immediate response
   return {

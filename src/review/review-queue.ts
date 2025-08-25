@@ -22,7 +22,7 @@ export class ReviewJobQueue {
     console.log(`ReviewJobQueue initialized with max queue size ${maxQueueSize} and max workers ${maxWorkers}`);
   }
 
-  enqueueReview(id: number, processReviewCb: (jobId: string) => Promise<void>): string {
+  enqueueReview(id: number, installationId: number, processReviewCb: (jobId: string) => Promise<void>): string {
     // Check if queue is at capacity
     if (this.jobs.size >= this.maxQueueSize) {
       throw new QueueFullError(`Review queue is full (max: ${this.maxQueueSize})`);
@@ -33,6 +33,7 @@ export class ReviewJobQueue {
       status: JOB_STATUS.QUEUED,
       created: Date.now(),
       id,
+      installationId,
     });
 
     // Store callback and add to waiting queue
