@@ -13,11 +13,18 @@ export interface LeaveInlineCommentArgs {
 
 export async function leaveInlineComment(
   args: LeaveInlineCommentArgs,
-  config: Config,
-  githubClient: GitHubClient
+  config: Config
 ): Promise<{ success: boolean; review_id?: number; error?: string }> {
   try {
     const { message, owner, repo, pr_number, path, line, commit_sha } = args;
+
+    // Get installation ID from environment
+    const installationId = parseInt(process.env.GITHUB_INSTALLATION_ID || '0');
+    if (!installationId) {
+      throw new Error('GITHUB_INSTALLATION_ID environment variable is required');
+    }
+
+    const githubClient = GitHubClient.forInstallation(config, installationId);
 
     console.log('🎯 Creating inline comment via PR review:', { path, line });
     

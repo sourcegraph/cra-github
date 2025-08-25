@@ -11,11 +11,18 @@ export interface TriggerReviewArgs {
 
 export async function triggerReview(
   args: TriggerReviewArgs,
-  config: Config,
-  githubClient: GitHubClient
+  config: Config
 ): Promise<{ success: boolean; review_id?: string; check_run_id?: number; error?: string }> {
   try {
     const { owner, repo, pr_number, commit_sha } = args;
+
+    // Get installation ID from environment
+    const installationId = parseInt(process.env.GITHUB_INSTALLATION_ID || '0');
+    if (!installationId) {
+      throw new Error('GITHUB_INSTALLATION_ID environment variable is required');
+    }
+
+    const githubClient = GitHubClient.forInstallation(config, installationId);
 
     // Get PR info to get the latest commit if not provided
     const prInfo = await githubClient.getPRInfo(owner, repo, pr_number);

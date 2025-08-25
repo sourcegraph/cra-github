@@ -14,11 +14,18 @@ export interface CreateCheckRunArgs {
 
 export async function createCheckRun(
   args: CreateCheckRunArgs,
-  config: Config,
-  githubClient: GitHubClient
+  config: Config
 ): Promise<{ success: boolean; check_run_id?: number; error?: string }> {
   try {
     const { owner, repo, commit_sha, status, conclusion, title, summary, details_url } = args;
+
+    // Get installation ID from environment
+    const installationId = parseInt(process.env.GITHUB_INSTALLATION_ID || '0');
+    if (!installationId) {
+      throw new Error('GITHUB_INSTALLATION_ID environment variable is required');
+    }
+
+    const githubClient = GitHubClient.forInstallation(config, installationId);
 
     const checkOptions: {
       name: string;

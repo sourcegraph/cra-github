@@ -9,8 +9,7 @@ export interface GetPRCommentsArgs {
 
 export async function getPRComments(
   args: GetPRCommentsArgs,
-  config: Config,
-  githubClient: GitHubClient
+  config: Config
 ): Promise<{ 
   success: boolean; 
   comments?: unknown[]; 
@@ -19,6 +18,14 @@ export async function getPRComments(
 }> {
   try {
     const { owner, repo, pr_number } = args;
+
+    // Get installation ID from environment
+    const installationId = parseInt(process.env.GITHUB_INSTALLATION_ID || '0');
+    if (!installationId) {
+      throw new Error('GITHUB_INSTALLATION_ID environment variable is required');
+    }
+
+    const githubClient = GitHubClient.forInstallation(config, installationId);
 
     const comments = await githubClient.getPRComments(owner, repo, pr_number);
     

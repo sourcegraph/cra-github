@@ -11,14 +11,13 @@ import {
   McpError,
 } from '@modelcontextprotocol/sdk/types.js';
 import { getConfig, Config } from '../config.js';
-import { GitHubClient } from '../github/client.js';
 import { leaveGeneralComment } from './tools/leave_comment.js';
 import { leaveInlineComment } from './tools/leave_inline_comment.js';
 import { createCheckRun } from './tools/create_check_run.js';
 import { getPRInfo } from './tools/get_pr_info.js';
 import { triggerReview } from './tools/trigger_review.js';
 import { getPRComments } from './tools/get_pr_comments.js';
-import { 
+import {
   validateLeaveGeneralCommentArgs,
   validateLeaveInlineCommentArgs,
   validateCreateCheckRunArgs,
@@ -30,7 +29,6 @@ import {
 class GitHubMCPServer {
   private server: Server;
   private config: Config;
-  private githubClient: GitHubClient;
 
   constructor() {
     console.log('🚀 Initializing GitHub MCP Server...');
@@ -47,14 +45,7 @@ class GitHubMCPServer {
     );
 
     this.config = getConfig();
-    // Initialize with a default client, will be updated in run()
-    this.githubClient = new GitHubClient(this.config);
     this.setupToolHandlers();
-  }
-
-  private async setupGitHubClient() {
-    console.log('🔑 Initializing GitHub client with static token');
-    this.githubClient = new GitHubClient(this.config);
   }
 
   private setupToolHandlers(): void {
@@ -268,8 +259,7 @@ class GitHubMCPServer {
             const validatedArgs = validateLeaveGeneralCommentArgs(args);
             const result = await leaveGeneralComment(
               validatedArgs,
-              this.config,
-              this.githubClient
+              this.config
             );
             console.log(`✅ leave_general_comment completed in ${Date.now() - startTime}ms`);
             return {
@@ -287,8 +277,7 @@ class GitHubMCPServer {
             const validatedArgs = validateLeaveInlineCommentArgs(args);
             const result = await leaveInlineComment(
               validatedArgs,
-              this.config,
-              this.githubClient
+              this.config
             );
             console.log(`✅ leave_inline_comment completed in ${Date.now() - startTime}ms`);
             return {
@@ -306,8 +295,7 @@ class GitHubMCPServer {
             const validatedArgs = validateCreateCheckRunArgs(args);
             const result = await createCheckRun(
               validatedArgs,
-              this.config,
-              this.githubClient
+              this.config
             );
             console.log(`✅ create_check_run completed in ${Date.now() - startTime}ms`);
             return {
@@ -325,8 +313,7 @@ class GitHubMCPServer {
             const validatedArgs = validateGetPRInfoArgs(args);
             const result = await getPRInfo(
               validatedArgs,
-              this.config,
-              this.githubClient
+              this.config
             );
             console.log(`✅ get_pr_info completed in ${Date.now() - startTime}ms`);
             return {
@@ -344,8 +331,7 @@ class GitHubMCPServer {
             const validatedArgs = validateTriggerReviewArgs(args);
             const result = await triggerReview(
               validatedArgs,
-              this.config,
-              this.githubClient
+              this.config
             );
             console.log(`✅ trigger_review completed in ${Date.now() - startTime}ms`);
             return {
@@ -363,8 +349,7 @@ class GitHubMCPServer {
             const validatedArgs = validateGetPRCommentsArgs(args);
             const result = await getPRComments(
               validatedArgs,
-              this.config,
-              this.githubClient
+              this.config
             );
             console.log(`✅ get_pr_comments completed in ${Date.now() - startTime}ms`);
             return {
@@ -397,9 +382,6 @@ class GitHubMCPServer {
 
   async run(): Promise<void> {
     console.log('🔌 Starting MCP server connection...');
-    // Setup the proper GitHub client before starting
-    await this.setupGitHubClient();
-    
     console.log('📡 Creating stdio transport...');
     const transport = new StdioServerTransport();
     console.log('🔗 Connecting to transport...');

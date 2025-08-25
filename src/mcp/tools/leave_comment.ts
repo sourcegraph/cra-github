@@ -10,12 +10,18 @@ export interface LeaveGeneralCommentArgs {
 
 export async function leaveGeneralComment(
   args: LeaveGeneralCommentArgs,
-  config: Config,
-  githubClient: GitHubClient
+  config: Config
 ): Promise<{ success: boolean; comment_id?: number; error?: string }> {
   try {
     const { message, owner, repo, pr_number } = args;
 
+    // Get installation ID from environment
+    const installationId = parseInt(process.env.GITHUB_INSTALLATION_ID || '0');
+    if (!installationId) {
+      throw new Error('GITHUB_INSTALLATION_ID environment variable is required');
+    }
+
+    const githubClient = GitHubClient.forInstallation(config, installationId);
     const response = await githubClient.createPRComment(owner, repo, pr_number, message);
     
     return {

@@ -1,8 +1,6 @@
 import { Hono, Context, Next } from "hono";
 import { cors } from "hono/cors";
-// Remove unused imports
 import { getConfig, Config } from "../config.js";
-import { GitHubClient } from "../github/client.js";
 import { leaveGeneralComment } from "./tools/leave_comment.js";
 import { leaveInlineComment } from "./tools/leave_inline_comment.js";
 import { createCheckRun } from "./tools/create_check_run.js";
@@ -66,8 +64,6 @@ export function createMCPRoutes(): Hono {
     await next();
   });
 
-  // Create GitHub client (we'll use default config for now)
-  const githubClient = new GitHubClient(config);
 
   // Main MCP endpoint for JSON-RPC messages
   app.post("/", async (c) => {
@@ -75,23 +71,23 @@ export function createMCPRoutes(): Hono {
       console.log("📨 POST request to MCP endpoint");
       console.log("📋 Method:", c.req.method);
       console.log("📋 URL:", c.req.url);
-      
+
       // Check Accept header as per MCP spec
       const acceptHeader = c.req.header("Accept");
       console.log("🎯 Accept header:", acceptHeader);
-      
+
       const body = await c.req.json();
       console.log("🔍 Received MCP request:", JSON.stringify(body, null, 2));
-      
+
       const bodyObj = body as Record<string, unknown>;
-      
+
       // Handle JSON-RPC request
       if (bodyObj.jsonrpc !== "2.0") {
         console.log("❌ Invalid JSON-RPC version:", bodyObj.jsonrpc);
-        return c.json({ 
-          jsonrpc: "2.0", 
-          error: { code: -32600, message: "Invalid Request" }, 
-          id: bodyObj.id || null 
+        return c.json({
+          jsonrpc: "2.0",
+          error: { code: -32600, message: "Invalid Request" },
+          id: bodyObj.id || null
         }, 400);
       }
 
@@ -108,7 +104,7 @@ export function createMCPRoutes(): Hono {
           return handleToolsList(c, body);
         case "tools/call":
           console.log("🔧 Handling tools/call");
-          return handleToolsCall(c, body, config, githubClient);
+          return handleToolsCall(c, body, config);
         default:
           console.log("❌ Unknown method:", body.method);
           return c.json({
@@ -146,7 +142,7 @@ export function createMCPRoutes(): Hono {
     c.header("Access-Control-Allow-Origin", "*");
 
     console.log("✅ SSE stream established");
-    
+
     // Return a basic SSE response that keeps connection open
     // The actual JSON-RPC messages will come via POST requests
     return c.text("data: connected\n\n", 200);
@@ -159,7 +155,7 @@ function handleInitialize(c: Context, body: unknown) {
   try {
     const bodyObj = body as Record<string, unknown>;
     console.log("🚀 Initializing MCP server with params:", bodyObj.params);
-    
+
     return c.json({
       jsonrpc: "2.0",
       result: {
@@ -203,213 +199,213 @@ function handleToolsList(c: Context, body: unknown) {
   try {
     console.log("📋 Listing tools for request ID:", (body as Record<string, unknown>).id);
     const tools = [
-        {
-          name: "leave_general_comment",
-          description: "Leave general comments on pull requests",
-          inputSchema: {
-            type: "object",
-            properties: {
-              message: {
-                type: "string",
-                description: "The comment message",
-              },
-              owner: {
-                type: "string",
-                description: "Repository owner",
-              },
-              repo: {
-                type: "string",
-                description: "Repository name",
-              },
-              pr_number: {
-                type: "number",
-                description: "Pull request number",
-              },
+      {
+        name: "leave_general_comment",
+        description: "Leave general comments on pull requests",
+        inputSchema: {
+          type: "object",
+          properties: {
+            message: {
+              type: "string",
+              description: "The comment message",
             },
-            required: ["message", "owner", "repo", "pr_number"],
-          },
-        },
-        {
-          name: "leave_inline_comment",
-          description: "Leave inline comments on specific lines in pull requests",
-          inputSchema: {
-            type: "object",
-            properties: {
-              message: {
-                type: "string",
-                description: "The comment message",
-              },
-              owner: {
-                type: "string",
-                description: "Repository owner",
-              },
-              repo: {
-                type: "string",
-                description: "Repository name",
-              },
-              pr_number: {
-                type: "number",
-                description: "Pull request number",
-              },
-              path: {
-                type: "string",
-                description: "File path for the inline comment",
-              },
-              line: {
-                type: "number",
-                description: "Line number for the inline comment",
-              },
-              commit_sha: {
-                type: "string",
-                description: "Commit SHA (optional - will be fetched if not provided)",
-              },
+            owner: {
+              type: "string",
+              description: "Repository owner",
             },
-            required: ["message", "owner", "repo", "pr_number", "path", "line"],
-          },
-        },
-        {
-          name: "create_check_run",
-          description: "Create or update check run status",
-          inputSchema: {
-            type: "object",
-            properties: {
-              owner: {
-                type: "string",
-                description: "Repository owner",
-              },
-              repo: {
-                type: "string",
-                description: "Repository name",
-              },
-              commit_sha: {
-                type: "string",
-                description: "Commit SHA to create check run for",
-              },
-              status: {
-                type: "string",
-                enum: ["queued", "in_progress", "completed"],
-                description: "Check run status",
-              },
-              conclusion: {
-                type: "string",
-                enum: ["success", "failure", "neutral", "cancelled", "skipped", "timed_out"],
-                description: "Check run conclusion (optional)",
-              },
-              title: {
-                type: "string",
-                description: "Check run title (optional)",
-              },
-              summary: {
-                type: "string",
-                description: "Check run summary (optional)",
-              },
-              details_url: {
-                type: "string",
-                description: "Details URL for the check run (optional)",
-              },
+            repo: {
+              type: "string",
+              description: "Repository name",
             },
-            required: ["owner", "repo", "commit_sha", "status"],
-          },
-        },
-        {
-          name: "get_pr_info",
-          description: "Get pull request details",
-          inputSchema: {
-            type: "object",
-            properties: {
-              owner: {
-                type: "string",
-                description: "Repository owner",
-              },
-              repo: {
-                type: "string",
-                description: "Repository name",
-              },
-              pr_number: {
-                type: "number",
-                description: "Pull request number",
-              },
-              include_diff: {
-                type: "boolean",
-                description: "Include diff content (optional, default: false)",
-                default: false,
-              },
+            pr_number: {
+              type: "number",
+              description: "Pull request number",
             },
-            required: ["owner", "repo", "pr_number"],
           },
+          required: ["message", "owner", "repo", "pr_number"],
         },
-        {
-          name: "trigger_review",
-          description: "Start code review process",
-          inputSchema: {
-            type: "object",
-            properties: {
-              owner: {
-                type: "string",
-                description: "Repository owner",
-              },
-              repo: {
-                type: "string",
-                description: "Repository name",
-              },
-              pr_number: {
-                type: "number",
-                description: "Pull request number",
-              },
-              commit_sha: {
-                type: "string",
-                description: "Specific commit SHA to review (optional)",
-              },
-              force: {
-                type: "boolean",
-                description: "Force re-review even if already reviewed (optional)",
-                default: false,
-              },
+      },
+      {
+        name: "leave_inline_comment",
+        description: "Leave inline comments on specific lines in pull requests",
+        inputSchema: {
+          type: "object",
+          properties: {
+            message: {
+              type: "string",
+              description: "The comment message",
             },
-            required: ["owner", "repo", "pr_number"],
-          },
-        },
-        {
-          name: "get_pr_comments",
-          description: "Get all comments on a pull request",
-          inputSchema: {
-            type: "object",
-            properties: {
-              owner: {
-                type: "string",
-                description: "Repository owner",
-              },
-              repo: {
-                type: "string",
-                description: "Repository name",
-              },
-              pr_number: {
-                type: "number",
-                description: "Pull request number",
-              },
+            owner: {
+              type: "string",
+              description: "Repository owner",
             },
-            required: ["owner", "repo", "pr_number"],
+            repo: {
+              type: "string",
+              description: "Repository name",
+            },
+            pr_number: {
+              type: "number",
+              description: "Pull request number",
+            },
+            path: {
+              type: "string",
+              description: "File path for the inline comment",
+            },
+            line: {
+              type: "number",
+              description: "Line number for the inline comment",
+            },
+            commit_sha: {
+              type: "string",
+              description: "Commit SHA (optional - will be fetched if not provided)",
+            },
           },
+          required: ["message", "owner", "repo", "pr_number", "path", "line"],
         },
-      ];
+      },
+      {
+        name: "create_check_run",
+        description: "Create or update check run status",
+        inputSchema: {
+          type: "object",
+          properties: {
+            owner: {
+              type: "string",
+              description: "Repository owner",
+            },
+            repo: {
+              type: "string",
+              description: "Repository name",
+            },
+            commit_sha: {
+              type: "string",
+              description: "Commit SHA to create check run for",
+            },
+            status: {
+              type: "string",
+              enum: ["queued", "in_progress", "completed"],
+              description: "Check run status",
+            },
+            conclusion: {
+              type: "string",
+              enum: ["success", "failure", "neutral", "cancelled", "skipped", "timed_out"],
+              description: "Check run conclusion (optional)",
+            },
+            title: {
+              type: "string",
+              description: "Check run title (optional)",
+            },
+            summary: {
+              type: "string",
+              description: "Check run summary (optional)",
+            },
+            details_url: {
+              type: "string",
+              description: "Details URL for the check run (optional)",
+            },
+          },
+          required: ["owner", "repo", "commit_sha", "status"],
+        },
+      },
+      {
+        name: "get_pr_info",
+        description: "Get pull request details",
+        inputSchema: {
+          type: "object",
+          properties: {
+            owner: {
+              type: "string",
+              description: "Repository owner",
+            },
+            repo: {
+              type: "string",
+              description: "Repository name",
+            },
+            pr_number: {
+              type: "number",
+              description: "Pull request number",
+            },
+            include_diff: {
+              type: "boolean",
+              description: "Include diff content (optional, default: false)",
+              default: false,
+            },
+          },
+          required: ["owner", "repo", "pr_number"],
+        },
+      },
+      {
+        name: "trigger_review",
+        description: "Start code review process",
+        inputSchema: {
+          type: "object",
+          properties: {
+            owner: {
+              type: "string",
+              description: "Repository owner",
+            },
+            repo: {
+              type: "string",
+              description: "Repository name",
+            },
+            pr_number: {
+              type: "number",
+              description: "Pull request number",
+            },
+            commit_sha: {
+              type: "string",
+              description: "Specific commit SHA to review (optional)",
+            },
+            force: {
+              type: "boolean",
+              description: "Force re-review even if already reviewed (optional)",
+              default: false,
+            },
+          },
+          required: ["owner", "repo", "pr_number"],
+        },
+      },
+      {
+        name: "get_pr_comments",
+        description: "Get all comments on a pull request",
+        inputSchema: {
+          type: "object",
+          properties: {
+            owner: {
+              type: "string",
+              description: "Repository owner",
+            },
+            repo: {
+              type: "string",
+              description: "Repository name",
+            },
+            pr_number: {
+              type: "number",
+              description: "Pull request number",
+            },
+          },
+          required: ["owner", "repo", "pr_number"],
+        },
+      },
+    ];
 
-      console.log("📋 Returning tools list with", tools.length, "tools");
-      return c.json({ 
-        jsonrpc: "2.0", 
-        result: { tools }, 
-        id: (body as Record<string, unknown>).id 
-      });
-    } catch (error) {
-      console.error("Error listing tools:", error);
-      return c.json({
-        jsonrpc: "2.0",
-        error: { code: -32603, message: "Internal error" },
-        id: (body as Record<string, unknown>).id || null
-      }, 500);
-    }
+    console.log("📋 Returning tools list with", tools.length, "tools");
+    return c.json({
+      jsonrpc: "2.0",
+      result: { tools },
+      id: (body as Record<string, unknown>).id
+    });
+  } catch (error) {
+    console.error("Error listing tools:", error);
+    return c.json({
+      jsonrpc: "2.0",
+      error: { code: -32603, message: "Internal error" },
+      id: (body as Record<string, unknown>).id || null
+    }, 500);
+  }
 }
 
-async function handleToolsCall(c: Context, body: unknown, config: Config, githubClient: GitHubClient) {
+async function handleToolsCall(c: Context, body: unknown, config: Config) {
   const bodyObj = body as Record<string, unknown>;
   try {
     console.log("🔧 Tool call params:", JSON.stringify(bodyObj.params, null, 2));
@@ -431,8 +427,7 @@ async function handleToolsCall(c: Context, body: unknown, config: Config, github
       case "leave_general_comment":
         result = await leaveGeneralComment(
           validateLeaveGeneralCommentArgs(args),
-          config,
-          githubClient
+          config
         );
         break;
 
@@ -443,8 +438,7 @@ async function handleToolsCall(c: Context, body: unknown, config: Config, github
           console.log("✅ Args validated successfully:", JSON.stringify(validatedArgs, null, 2));
           result = await leaveInlineComment(
             validatedArgs,
-            config,
-            githubClient
+            config
           );
         } catch (validationError) {
           console.log("❌ Validation error:", validationError);
@@ -455,32 +449,28 @@ async function handleToolsCall(c: Context, body: unknown, config: Config, github
       case "create_check_run":
         result = await createCheckRun(
           validateCreateCheckRunArgs(args),
-          config,
-          githubClient
+          config
         );
         break;
 
       case "get_pr_info":
         result = await getPRInfo(
           validateGetPRInfoArgs(args),
-          config,
-          githubClient
+          config
         );
         break;
 
       case "trigger_review":
         result = await triggerReview(
           validateTriggerReviewArgs(args),
-          config,
-          githubClient
+          config
         );
         break;
 
       case "get_pr_comments":
         result = await getPRComments(
           validateGetPRCommentsArgs(args),
-          config,
-          githubClient
+          config
         );
         break;
 
@@ -502,9 +492,9 @@ async function handleToolsCall(c: Context, body: unknown, config: Config, github
     console.error("Error calling tool:", error);
     return c.json({
       jsonrpc: "2.0",
-      error: { 
-        code: -32603, 
-        message: error instanceof Error ? error.message : "Unknown error" 
+      error: {
+        code: -32603,
+        message: error instanceof Error ? error.message : "Unknown error"
       },
       id: bodyObj.id || null
     }, 500);

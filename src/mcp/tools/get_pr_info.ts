@@ -10,8 +10,7 @@ export interface GetPRInfoArgs {
 
 export async function getPRInfo(
   args: GetPRInfoArgs,
-  config: Config,
-  githubClient: GitHubClient
+  config: Config
 ): Promise<{ 
   success: boolean; 
   pr_info?: unknown; 
@@ -21,6 +20,14 @@ export async function getPRInfo(
 }> {
   try {
     const { owner, repo, pr_number, include_diff = false } = args;
+
+    // Get installation ID from environment
+    const installationId = parseInt(process.env.GITHUB_INSTALLATION_ID || '0');
+    if (!installationId) {
+      throw new Error('GITHUB_INSTALLATION_ID environment variable is required');
+    }
+
+    const githubClient = GitHubClient.forInstallation(config, installationId);
 
     // Get PR info
     const prInfo = await githubClient.getPRInfo(owner, repo, pr_number);
