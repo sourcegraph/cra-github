@@ -12,7 +12,6 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import { getConfig, Config } from '../config.js';
 import { GitHubClient } from '../github/client.js';
-import { InstallationStore } from '../github/installation-store.js';
 import { leaveGeneralComment } from './tools/leave_comment.js';
 import { leaveInlineComment } from './tools/leave_inline_comment.js';
 import { createCheckRun } from './tools/create_check_run.js';
@@ -54,39 +53,6 @@ class GitHubMCPServer {
   }
 
   private async setupGitHubClient() {
-    // If we have GitHub App credentials, try to use the first available installation
-    if (process.env.GITHUB_APP_ID && (process.env.GITHUB_APP_PRIVATE_KEY || process.env.GITHUB_APP_PRIVATE_KEY_PATH)) {
-      console.log('📱 GitHub App credentials detected, loading installations...');
-      try {
-        const installationStore = new InstallationStore();
-        const installations = await installationStore.listInstallations();
-        
-        console.log(`  Found ${installations.length} installations`);
-        installations.forEach((inst, i) => {
-          console.log(`    ${i + 1}. ${inst.githubUsername} (ID: ${inst.githubInstallationId}, hasRepos: ${!!inst.repositories?.length})`);
-        });
-        
-        if (installations.length > 0) {
-          // Use the newest installation with a valid githubInstallationId (sort by installation date)
-          const validInstallations = installations
-            .filter(inst => inst.githubInstallationId)
-            .sort((a, b) => new Date(b.installedAt).getTime() - new Date(a.installedAt).getTime());
-          
-          if (validInstallations.length > 0) {
-            const installation = validInstallations[0]; // Use the newest installation
-            this.githubClient = new GitHubClient(this.config, installation);
-            return;
-          }
-        }
-        console.warn('⚠️  GitHub App credentials found but no valid installations available');
-      } catch (error) {
-        console.warn('❌ Failed to load installations, falling back to token auth:', error);
-      }
-    } else {
-      console.log('💾 No GitHub App credentials found, using static token');
-    }
-    
-    // Fallback to static token
     console.log('🔑 Initializing GitHub client with static token');
     this.githubClient = new GitHubClient(this.config);
   }
