@@ -14,9 +14,9 @@ export async function getPRInfo(
   githubClient: GitHubClient
 ): Promise<{ 
   success: boolean; 
-  pr_info?: any; 
+  pr_info?: unknown; 
   diff?: string;
-  repository_info?: any;
+  repository_info?: unknown;
   error?: string 
 }> {
   try {

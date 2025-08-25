@@ -7,9 +7,10 @@ import { InstallationStore } from '../github/installation-store.js';
 import { GitHubInstallation } from '../types/installation.js';
 import { GitHubPullRequestEvent } from '../github/types.js';
 import { GitHubClient } from '../github/client.js';
-import { QueueFullError } from '../review/review-queue.js';
+import { QueueFullError, ReviewJobQueue } from '../review/review-queue.js';
 import { Config, getConfig } from '../config.js';
 import { processReview } from '../github/process-review.js';
+import { z } from 'zod';
 
 const github = new Hono();
 const oauthService = new GitHubOAuthService();
@@ -20,12 +21,31 @@ const config: Config = getConfig();
 const githubClient = new GitHubClient(config);
 
 // We'll need to receive the reviewQueue from the main server
-let reviewQueue: any = null;
+let reviewQueue: ReviewJobQueue | null = null;
 
 // Function to set the review queue from the main server
-export function setReviewQueue(queue: any) {
+export function setReviewQueue(queue: ReviewJobQueue) {
   reviewQueue = queue;
 }
+
+// Minimal webhook payload schemas - only the fields we actually use
+const InstallationEventSchema = z.object({
+  action: z.string(),
+  installation: z.object({
+    id: z.number(),
+    account: z.object({
+      id: z.number(),
+      login: z.string(),
+    }),
+  }),
+  repositories: z.array(z.object({
+    id: z.number(),
+    name: z.string(),
+    full_name: z.string(),
+  })).optional(),
+});
+
+
 
 // GitHub App authentication helpers
 async function generateAppToken(): Promise<string> {
@@ -158,9 +178,8 @@ async function getInstallationRepositories(installationId: string, installationT
 /**
  * Handle installation events (installation, installation_repositories)
  */
-async function handleInstallationEvent(payload: any) {
-  const action = payload.action;
-  const installation = payload.installation;
+async function handleInstallationEvent(payload: unknown) {
+  const { action, installation } = InstallationEventSchema.parse(payload);
   
   console.log(`Processing installation event: ${action} for installation ${installation.id}`);
   

@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { Hono, Context, Next } from "hono";
 import { cors } from "hono/cors";
 // Remove unused imports
 import { getConfig, Config } from "../config.js";
@@ -33,7 +33,7 @@ export function createMCPRoutes(): Hono {
   );
 
   // Middleware to validate Authorization header
-  const authMiddleware = async (c: any, next: any) => {
+  const authMiddleware = async (c: Context, next: Next) => {
     const authHeader = c.req.header("Authorization");
     const expectedToken = process.env.MCP_AUTH_TOKEN;
 
@@ -83,18 +83,20 @@ export function createMCPRoutes(): Hono {
       const body = await c.req.json();
       console.log("🔍 Received MCP request:", JSON.stringify(body, null, 2));
       
+      const bodyObj = body as Record<string, unknown>;
+      
       // Handle JSON-RPC request
-      if (body.jsonrpc !== "2.0") {
-        console.log("❌ Invalid JSON-RPC version:", body.jsonrpc);
+      if (bodyObj.jsonrpc !== "2.0") {
+        console.log("❌ Invalid JSON-RPC version:", bodyObj.jsonrpc);
         return c.json({ 
           jsonrpc: "2.0", 
           error: { code: -32600, message: "Invalid Request" }, 
-          id: body.id || null 
+          id: bodyObj.id || null 
         }, 400);
       }
 
-      console.log("📋 Method:", body.method, "ID:", body.id);
-      switch (body.method) {
+      console.log("📋 Method:", bodyObj.method, "ID:", bodyObj.id);
+      switch (bodyObj.method) {
         case "initialize":
           console.log("🔧 Handling initialize");
           return handleInitialize(c, body);
@@ -112,7 +114,7 @@ export function createMCPRoutes(): Hono {
           return c.json({
             jsonrpc: "2.0",
             error: { code: -32601, message: "Method not found" },
-            id: body.id || null
+            id: bodyObj.id || null
           }, 400);
       }
     } catch (error) {
@@ -153,9 +155,10 @@ export function createMCPRoutes(): Hono {
   return app;
 }
 
-function handleInitialize(c: any, body: any) {
+function handleInitialize(c: Context, body: unknown) {
   try {
-    console.log("🚀 Initializing MCP server with params:", body.params);
+    const bodyObj = body as Record<string, unknown>;
+    console.log("🚀 Initializing MCP server with params:", bodyObj.params);
     
     return c.json({
       jsonrpc: "2.0",
@@ -169,19 +172,19 @@ function handleInitialize(c: any, body: any) {
           version: "2.0.0"
         }
       },
-      id: body.id
+      id: bodyObj.id
     });
   } catch (error) {
     console.error("Error during initialization:", error);
     return c.json({
       jsonrpc: "2.0",
       error: { code: -32603, message: "Internal error" },
-      id: body.id || null
+      id: (body as Record<string, unknown>).id || null
     }, 500);
   }
 }
 
-function handleInitializedNotification(c: any, body: any) {
+function handleInitializedNotification(c: Context, body: unknown) {
   try {
     console.log("📢 Received initialized notification");
     // Notifications don't require a response, but we return 202 Accepted
@@ -191,14 +194,14 @@ function handleInitializedNotification(c: any, body: any) {
     return c.json({
       jsonrpc: "2.0",
       error: { code: -32603, message: "Internal error" },
-      id: body.id || null
+      id: (body as Record<string, unknown>).id || null
     }, 500);
   }
 }
 
-function handleToolsList(c: any, body: any) {
+function handleToolsList(c: Context, body: unknown) {
   try {
-    console.log("📋 Listing tools for request ID:", body.id);
+    console.log("📋 Listing tools for request ID:", (body as Record<string, unknown>).id);
     const tools = [
         {
           name: "leave_general_comment",
@@ -394,29 +397,30 @@ function handleToolsList(c: any, body: any) {
       return c.json({ 
         jsonrpc: "2.0", 
         result: { tools }, 
-        id: body.id 
+        id: (body as Record<string, unknown>).id 
       });
     } catch (error) {
       console.error("Error listing tools:", error);
       return c.json({
         jsonrpc: "2.0",
         error: { code: -32603, message: "Internal error" },
-        id: body.id || null
+        id: (body as Record<string, unknown>).id || null
       }, 500);
     }
 }
 
-async function handleToolsCall(c: any, body: any, config: Config, githubClient: GitHubClient) {
+async function handleToolsCall(c: Context, body: unknown, config: Config, githubClient: GitHubClient) {
+  const bodyObj = body as Record<string, unknown>;
   try {
-    console.log("🔧 Tool call params:", JSON.stringify(body.params, null, 2));
-    const { name, arguments: args } = body.params || {};
+    console.log("🔧 Tool call params:", JSON.stringify(bodyObj.params, null, 2));
+    const { name, arguments: args } = (bodyObj.params as Record<string, unknown>) || {};
 
     if (!name) {
       console.log("❌ Missing tool name in params");
       return c.json({
         jsonrpc: "2.0",
         error: { code: -32602, message: "Invalid params: missing tool name" },
-        id: body.id || null
+        id: bodyObj.id || null
       }, 400);
     }
 
@@ -484,7 +488,7 @@ async function handleToolsCall(c: any, body: any, config: Config, githubClient: 
         return c.json({
           jsonrpc: "2.0",
           error: { code: -32601, message: `Unknown tool: ${name}` },
-          id: body.id || null
+          id: bodyObj.id || null
         }, 400);
     }
 
@@ -492,7 +496,7 @@ async function handleToolsCall(c: any, body: any, config: Config, githubClient: 
     return c.json({
       jsonrpc: "2.0",
       result,
-      id: body.id
+      id: bodyObj.id
     });
   } catch (error) {
     console.error("Error calling tool:", error);
@@ -502,7 +506,7 @@ async function handleToolsCall(c: any, body: any, config: Config, githubClient: 
         code: -32603, 
         message: error instanceof Error ? error.message : "Unknown error" 
       },
-      id: body.id || null
+      id: bodyObj.id || null
     }, 500);
   }
 }

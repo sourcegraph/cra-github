@@ -13,7 +13,7 @@ export async function getPRComments(
   githubClient: GitHubClient
 ): Promise<{ 
   success: boolean; 
-  comments?: any[]; 
+  comments?: unknown[]; 
   total_comments?: number;
   error?: string 
 }> {
