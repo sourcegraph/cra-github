@@ -1,6 +1,6 @@
 # GitHub MCP Server
 
-This directory contains the Model Context Protocol (MCP) server implementation for GitHub integration. The server exposes GitHub operations as tools that can be used by AI agents and code editors like Cursor.
+This directory contains the Model Context Protocol (MCP) server implementation for GitHub integration. The server exposes GitHub operations as tools that can be used by the Amp Agent.
 
 ## Available Tools
 
@@ -61,22 +61,6 @@ The server uses the same configuration as the main application. Make sure your `
 The MCP server works with GitHub App installations for authentication. When accessing repositories, it uses the GitHub App's installation tokens rather than personal access tokens.
 
 ## Integration with AI Agents
-
-### Cursor Configuration
-
-Add to your Cursor settings:
-
-```json
-{
-  "mcp.servers": {
-    "github": {
-      "command": "npm",
-      "args": ["run", "mcp"],
-      "cwd": "/path/to/your/cra-github/project"
-    }
-  }
-}
-```
 
 ### Amp Integration
 

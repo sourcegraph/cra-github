@@ -219,7 +219,7 @@ npm run mcp:build
 
 ## MCP Integration
 
-The app includes a Model Context Protocol (MCP) server that exposes GitHub operations as tools for AI agents and code editors like Cursor.
+The app includes a Model Context Protocol (MCP) server that exposes GitHub operations as tools for Amp Agent.
 
 ### Available MCP Tools
 - `leave_general_comment` - Leave general comments on pull requests
