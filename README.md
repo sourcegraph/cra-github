@@ -81,11 +81,8 @@ GITHUB_BASE_URL=https://github.com
 GITHUB_APP_CWD=/Users/username/project/your-repo
 ```
 
-#### MCP Configuration
+#### Public URL Configuration
 ```env
-# MCP Server Authentication
-MCP_AUTH_TOKEN=your_mcp_secret
-
 # Public URL for webhooks (use ngrok or similar for development)
 CRA_PUBLIC_URL=https://ngrok-your-url.app
 ```
@@ -169,10 +166,7 @@ To adjust review focus, modify the `prompt_template` section in `config.yml` to 
 - `GET /github/callback` - GitHub App installation callback
 - `GET /github/dashboard/:installationId` - Installation dashboard
 
-### MCP Server Endpoints
-- `GET /mcp/tools/list` - List available MCP tools
-- `POST /mcp/tools/call` - Call an MCP tool
-- `GET /mcp/health` - MCP server health check
+
 
 ## Development
 
@@ -236,7 +230,7 @@ The app includes a Model Context Protocol (MCP) server that exposes GitHub opera
 - `get_pr_comments` - Get all comments on a pull request
 
 ### Usage with AI Agents
-The MCP server can be accessed via HTTP at `/mcp` endpoints or run as a standalone stdio server. See [`src/mcp/README.md`](src/mcp/README.md) for detailed configuration and usage instructions.
+The MCP server runs as a standalone stdio server. See [`src/mcp/README.md`](src/mcp/README.md) for detailed configuration and usage instructions.
 
 ## Architecture
 

@@ -67,27 +67,7 @@ Get all comments on a pull request.
 
 ## Usage
 
-### HTTP Server (for mcp-remote)
-
-The MCP server is exposed via HTTP endpoints at `/mcp` when the main server is running.
-
-**Endpoints:**
-- `GET /mcp/tools/list` - List available tools
-- `POST /mcp/tools/call` - Call a tool
-- `GET /mcp/health` - Health check
-
-**Authentication:**
-Set the `MCP_AUTH_TOKEN` environment variable and include it in requests:
-```
-Authorization: Bearer <your-token>
-```
-
-**Usage with mcp-remote:**
-```bash
-npx mcp-remote http://localhost:5053/mcp --header "Authorization: Bearer your-token"
-```
-
-### Standalone STDIO Server
+### STDIO Server
 
 Run the standalone MCP server for direct stdio communication:
 
@@ -108,7 +88,6 @@ The server uses the same configuration as the main application. Make sure your `
 - `GITHUB_APP_ID` - GitHub App ID
 - `GITHUB_APP_PRIVATE_KEY` or `GITHUB_APP_PRIVATE_KEY_PATH` - GitHub App private key
 - `GITHUB_BASE_URL` - GitHub API URL (default: https://api.github.com)
-- `MCP_AUTH_TOKEN` - Token for MCP server authentication (optional)
 
 ### GitHub App Integration
 The MCP server works with GitHub App installations for authentication. When accessing repositories, it uses the GitHub App's installation tokens rather than personal access tokens.
@@ -123,14 +102,9 @@ Add to your Cursor settings:
 {
   "mcp.servers": {
     "github": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "mcp-remote", 
-        "http://localhost:5053/mcp",
-        "--header",
-        "Authorization: Bearer your-mcp-token"
-      ]
+      "command": "npm",
+      "args": ["run", "mcp"],
+      "cwd": "/path/to/your/cra-github/project"
     }
   }
 }
@@ -192,6 +166,5 @@ The tools are organized in the `/src/mcp/tools/` directory:
 - `get_pr_comments.ts` - PR comments retrieval
 - `trigger_review.ts` - Review triggering
 
-The server implementations are:
+The server implementation is:
 - `server.ts` - Standalone stdio MCP server
-- `http-server.ts` - HTTP adapter for mcp-remote
