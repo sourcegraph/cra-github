@@ -18,13 +18,7 @@ export async function leaveInlineComment(
 
     console.log('📝 Collecting inline comment for later review:', { path, line });
     
-    // Get session ID from environment (passed by the review process)
-    const sessionId = process.env.REVIEW_SESSION_ID;
-    if (!sessionId) {
-      throw new Error('No REVIEW_SESSION_ID found in environment. Review session not properly initialized.');
-    }
-    
-    const collector = getCurrentCollector(sessionId);
+    const collector = getCurrentCollector();
     collector.addInlineComment(path, line, message);
     
     return {

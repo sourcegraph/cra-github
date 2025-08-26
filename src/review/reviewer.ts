@@ -6,7 +6,7 @@ import { Config, getConfig } from "../config.js";
 import { newThread, execute } from "../amp.js";
 
 
-export const reviewDiff = async (diffContent: string, mrDetailsContent: string, installationId: number, sessionId?: string) => {
+export const reviewDiff = async (diffContent: string, mrDetailsContent: string, installationId: number) => {
 
     // Get config
     const config: Config = getConfig();
@@ -45,7 +45,7 @@ export const reviewDiff = async (diffContent: string, mrDetailsContent: string, 
       // Write settings to file with installation ID
       const settings = { ...ampConfig.settings };
       
-      // Ensure GitHub MCP server environment exists and set installation ID and session ID
+      // Ensure GitHub MCP server environment exists and set installation ID
       settings['amp.mcpServers'] = {
         ...settings['amp.mcpServers'],
         github: {
@@ -53,7 +53,6 @@ export const reviewDiff = async (diffContent: string, mrDetailsContent: string, 
           env: {
             ...settings['amp.mcpServers']?.github?.env,
             GITHUB_INSTALLATION_ID: installationId.toString(),
-            ...(sessionId && { REVIEW_SESSION_ID: sessionId }),
           }
         }
       };

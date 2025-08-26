@@ -50,30 +50,26 @@ export class ReviewCommentCollector {
   }
 }
 
-// Global collectors keyed by session ID for concurrent reviews
-const activeCollectors = new Map<string, ReviewCommentCollector>();
+// Global collector instance for the current review session
+let currentCollector: ReviewCommentCollector | null = null;
 
-export function startReviewSession(sessionId: string): ReviewCommentCollector {
-  const collector = new ReviewCommentCollector();
-  activeCollectors.set(sessionId, collector);
-  console.log(`Started review session: ${sessionId}`);
-  return collector;
+export function startReviewSession(): ReviewCommentCollector {
+  currentCollector = new ReviewCommentCollector();
+  return currentCollector;
 }
 
-export function getCurrentCollector(sessionId: string): ReviewCommentCollector {
-  const collector = activeCollectors.get(sessionId);
-  if (!collector) {
-    throw new Error(`No active review session found for ID: ${sessionId}. Call startReviewSession() first.`);
+export function getCurrentCollector(): ReviewCommentCollector {
+  if (!currentCollector) {
+    throw new Error('No active review session. Call startReviewSession() first.');
   }
-  return collector;
+  return currentCollector;
 }
 
-export function endReviewSession(sessionId: string): ReviewCommentCollector {
-  const collector = activeCollectors.get(sessionId);
-  if (!collector) {
-    throw new Error(`No active review session found for ID: ${sessionId}.`);
+export function endReviewSession(): ReviewCommentCollector {
+  if (!currentCollector) {
+    throw new Error('No active review session to end.');
   }
-  activeCollectors.delete(sessionId);
-  console.log(`Ended review session: ${sessionId}`);
+  const collector = currentCollector;
+  currentCollector = null;
   return collector;
 }

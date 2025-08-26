@@ -63,15 +63,14 @@ export async function processReview(
       const prDetailsContent = `Repository: ${payload.repository.full_name}, PR Number: ${prDetails.pr_number}, Commit SHA: ${prDetails.commit_sha}, PR URL: ${prDetails.pr_url}`;
 
       console.log(`Starting review session for job ${jobId}`);
-      const sessionId = `session-${jobId}`;
-      startReviewSession(sessionId);
+      startReviewSession();
 
       console.log(`Calling reviewDiff() for job ${jobId}`);
-      await reviewDiff(diffContent, prDetailsContent, installationId, sessionId);
+      await reviewDiff(diffContent, prDetailsContent, installationId);
       console.log(`Review completed for job ${jobId}`);
 
       // Collect all comments from the review session
-      const collector = endReviewSession(sessionId);
+      const collector = endReviewSession();
       console.log(`Collected ${collector.getInlineComments().length} inline comments and ${collector.getGeneralComments().length} general comments`);
 
       // Post aggregated review if there are any comments
@@ -111,8 +110,7 @@ export async function processReview(
       
       // End review session if it was started
       try {
-        const sessionId = `session-${jobId}`;
-        endReviewSession(sessionId);
+        endReviewSession();
       } catch {
         console.log('No active review session to end');
       }

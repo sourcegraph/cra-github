@@ -15,13 +15,7 @@ export async function leaveGeneralComment(
 
     console.log('📝 Collecting general comment for later review');
     
-    // Get session ID from environment (passed by the review process)
-    const sessionId = process.env.REVIEW_SESSION_ID;
-    if (!sessionId) {
-      throw new Error('No REVIEW_SESSION_ID found in environment. Review session not properly initialized.');
-    }
-    
-    const collector = getCurrentCollector(sessionId);
+    const collector = getCurrentCollector();
     collector.addGeneralComment(message);
     
     return {
