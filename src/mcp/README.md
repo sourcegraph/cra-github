@@ -25,39 +25,7 @@ Leave inline comments on specific lines in pull requests.
 - `line` (number, required): Line number for the inline comment
 - `commit_sha` (string, optional): Commit SHA (will be fetched if not provided)
 
-### 3. `create_check_run`
-Create or update check run status.
-
-**Parameters:**
-- `owner` (string, required): Repository owner
-- `repo` (string, required): Repository name
-- `commit_sha` (string, required): Commit SHA to create check run for
-- `status` (string, required): Check run status - "queued", "in_progress", or "completed"
-- `conclusion` (string, optional): Check run conclusion - "success", "failure", "neutral", "cancelled", "skipped", or "timed_out"
-- `title` (string, optional): Check run title
-- `summary` (string, optional): Check run summary
-- `details_url` (string, optional): Details URL for the check run
-
-### 4. `get_pr_info`
-Get pull request details and optionally the diff.
-
-**Parameters:**
-- `owner` (string, required): Repository owner
-- `repo` (string, required): Repository name
-- `pr_number` (number, required): Pull request number
-- `include_diff` (boolean, optional): Include diff content (default: false)
-
-### 5. `trigger_review`
-Start the code review process.
-
-**Parameters:**
-- `owner` (string, required): Repository owner
-- `repo` (string, required): Repository name
-- `pr_number` (number, required): Pull request number
-- `commit_sha` (string, optional): Specific commit SHA to review
-- `force` (boolean, optional): Force re-review even if already reviewed (default: false)
-
-### 6. `get_pr_comments`
+### 3. `get_pr_comments`
 Get all comments on a pull request.
 
 **Parameters:**
@@ -134,10 +102,10 @@ This allows Amp to automatically use the GitHub MCP tools during code reviews.
 ```
 You have access to GitHub tools. To review a pull request:
 
-1. Use get_pr_info to understand the context
+1. Use get_pr_comments to see existing feedback
 2. Review the code changes  
 3. Use leave_inline_comment to add specific feedback
-4. Use create_check_run to mark the review complete
+4. Use leave_general_comment for overall observations
 
 Owner: octocat
 Repo: Hello-World
@@ -148,23 +116,17 @@ PR Number: 123
 
 The tools are designed to work together in a typical code review workflow:
 
-1. **Get Context**: `get_pr_info` to fetch PR details and optionally the diff
-2. **Check Existing Feedback**: `get_pr_comments` to see what's already been discussed
-3. **Leave Feedback**: 
+1. **Check Existing Feedback**: `get_pr_comments` to see what's already been discussed
+2. **Leave Feedback**: 
    - `leave_inline_comment` for specific line-level issues
    - `leave_general_comment` for overall observations
-4. **Update Status**: `create_check_run` to mark the review as complete
-5. **Re-trigger if Needed**: `trigger_review` to restart the process
 
 ## Development
 
 The tools are organized in the `/src/mcp/tools/` directory:
 - `leave_comment.ts` - General comment functionality
 - `leave_inline_comment.ts` - Inline comment functionality
-- `create_check_run.ts` - Check run status updates
-- `get_pr_info.ts` - PR information retrieval  
 - `get_pr_comments.ts` - PR comments retrieval
-- `trigger_review.ts` - Review triggering
 
 The server implementation is:
 - `server.ts` - Standalone stdio MCP server

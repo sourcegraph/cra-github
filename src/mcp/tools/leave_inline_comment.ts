@@ -13,11 +13,12 @@ export interface LeaveInlineCommentArgs {
 
 export async function leaveInlineComment(
   args: LeaveInlineCommentArgs,
-  config: Config,
-  githubClient: GitHubClient
+  config: Config
 ): Promise<{ success: boolean; review_id?: number; error?: string }> {
   try {
     const { message, owner, repo, pr_number, path, line, commit_sha } = args;
+
+    const githubClient = GitHubClient.fromEnv(config);
 
     console.log('🎯 Creating inline comment via PR review:', { path, line });
     
@@ -47,7 +48,7 @@ export async function leaveInlineComment(
       owner, 
       repo, 
       pr_number, 
-      message,
+      '', // Empty body to avoid duplication
       'COMMENT',
       [{
         path,

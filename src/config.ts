@@ -1,69 +1,67 @@
 import { readFileSync } from 'fs';
 import * as yaml from 'js-yaml';
 import { config } from 'dotenv';
+import { z } from 'zod';
 
 // Load environment variables
 config();
 
-interface MCPServer {
-  command: string;
-  args?: string[];
-  env?: Record<string, string>;
-}
+// Single source of truth: Zod schema for config validation
+const ConfigSchema = z.object({
+  github: z.object({
+    base_url: z.string(),
+    token: z.string().optional(),
+    check_name: z.string(),
+    development_mode: z.boolean(),
+    bot_username: z.string(),
+    webhook_secret: z.string().optional(),
+  }),
+  queue: z.object({
+    max_workers: z.coerce.number(),
+    max_queue_size: z.coerce.number(),
+    retry_after_seconds: z.coerce.number(),
+  }),
+  diff_splitting: z.object({
+    max_chunk_size: z.coerce.number(),
+    max_concurrent: z.coerce.number(),
+  }),
+  server: z.object({
+    port: z.string(),
+    debug: z.string(),
+  }),
+  amp: z.object({
+    timeout: z.string(),
+    command: z.string(),
+    server_url: z.string(),
+    settings: z.object({
+      'amp.url': z.string(),
+      'amp.mcpServers': z.record(z.object({
+        command: z.string(),
+        args: z.array(z.string()).optional(),
+        env: z.record(z.string()).optional(),
+      })),
+    }),
+    prompt_template: z.string(),
+    tools: z.array(z.object({
+      name: z.string(),
+      description: z.string(),
+      instructions: z.array(z.string()),
+    })),
+  }),
+});
 
-interface AmpSettings {
-  'amp.url': string;
-  'amp.mcpServers': {
-    [key: string]: MCPServer;
-  };
-}
-
-interface Tool {
-  name: string;
-  description: string;
-  instructions: string[];
-}
-
-export interface Config {
-  github: {
-    base_url: string;
-    token: string;
-    check_name: string;
-    development_mode: boolean;
-    bot_username: string;
-    webhook_secret?: string;
-  };
-  queue: {
-    max_workers: number;
-    max_queue_size: number;
-    retry_after_seconds: number;
-  };
-  diff_splitting: {
-    max_chunk_size: number;
-    max_concurrent: number;
-  };
-  server: {
-    port: string;
-    debug: string;
-  };
-  amp: {
-    timeout: string;
-    command: string;
-    server_url: string;
-    settings: AmpSettings;
-    prompt_template: string;
-    tools: Tool[];
-  };
-}
+// Export the inferred type as the single source of truth
+export type Config = z.infer<typeof ConfigSchema>;
 
 class ConfigLoader {
   private static instance: ConfigLoader;
   private config: Config;
 
-  private constructor() {    
+  private constructor() {
     const configFile = readFileSync('config.yml', 'utf8');
-    const rawConfig = yaml.load(configFile) as any;
-    this.config = this.processEnvVars(rawConfig);
+    const rawConfig = yaml.load(configFile);
+    const processedConfig = this.processEnvVars(rawConfig);
+    this.config = ConfigSchema.parse(processedConfig);
   }
 
   static getInstance(): ConfigLoader {
@@ -77,7 +75,7 @@ class ConfigLoader {
     return this.config;
   }
 
-  private processEnvVars(obj: any): any {
+  private processEnvVars(obj: unknown): unknown {
     if (typeof obj === 'string') {
       return obj.replace(/\$\{([^}]+)\}/g, (_, envVar) => {
         const value = process.env[envVar];
@@ -93,7 +91,7 @@ class ConfigLoader {
       return obj.map(item => this.processEnvVars(item));
     }
     if (obj && typeof obj === 'object') {
-      const result: any = {};
+      const result: Record<string, unknown> = {};
       for (const [key, value] of Object.entries(obj)) {
         result[key] = this.processEnvVars(value);
       }

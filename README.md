@@ -224,9 +224,6 @@ The app includes a Model Context Protocol (MCP) server that exposes GitHub opera
 ### Available MCP Tools
 - `leave_general_comment` - Leave general comments on pull requests
 - `leave_inline_comment` - Leave inline comments on specific lines
-- `create_check_run` - Create or update check run status
-- `get_pr_info` - Get pull request details and optionally the diff
-- `trigger_review` - Start the code review process
 - `get_pr_comments` - Get all comments on a pull request
 
 ### Usage with AI Agents

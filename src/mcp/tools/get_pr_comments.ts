@@ -9,16 +9,17 @@ export interface GetPRCommentsArgs {
 
 export async function getPRComments(
   args: GetPRCommentsArgs,
-  config: Config,
-  githubClient: GitHubClient
+  config: Config
 ): Promise<{ 
   success: boolean; 
-  comments?: any[]; 
+  comments?: unknown[]; 
   total_comments?: number;
   error?: string 
 }> {
   try {
     const { owner, repo, pr_number } = args;
+
+    const githubClient = GitHubClient.fromEnv(config);
 
     const comments = await githubClient.getPRComments(owner, repo, pr_number);
     

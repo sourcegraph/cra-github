@@ -11,14 +11,18 @@ export class QueueFullError extends Error {
 export class ReviewJobQueue {
   private jobs = new Map<string, JobInfo>();
   private maxQueueSize: number;
+  private maxWorkers: number;
   private processing = new Set<string>();
+  private waiting: string[] = [];
+  private jobHandlers = new Map<string, (jobId: string) => Promise<void>>();
 
-  constructor(maxQueueSize: number) {
+  constructor(maxQueueSize: number, maxWorkers: number) {
     this.maxQueueSize = maxQueueSize;
-    console.log(`ReviewJobQueue initialized with max queue size ${maxQueueSize}`);
+    this.maxWorkers = maxWorkers;
+    console.log(`ReviewJobQueue initialized with max queue size ${maxQueueSize} and max workers ${maxWorkers}`);
   }
 
-  enqueueReview(id: number, processReviewCb: (jobId: string) => Promise<void>): string {
+  enqueueReview(id: number, installationId: number, processReviewCb: (jobId: string) => Promise<void>): string {
     // Check if queue is at capacity
     if (this.jobs.size >= this.maxQueueSize) {
       throw new QueueFullError(`Review queue is full (max: ${this.maxQueueSize})`);
@@ -29,16 +33,29 @@ export class ReviewJobQueue {
       status: JOB_STATUS.QUEUED,
       created: Date.now(),
       id,
+      installationId,
     });
 
-    // Process job asynchronously without awaiting
-    this.processReview(jobId, id, processReviewCb);
+    // Store callback and add to waiting queue
+    this.jobHandlers.set(jobId, processReviewCb);
+    this.waiting.push(jobId);
+
+    // Try to start job immediately if worker available
+    this.tryToStartNext();
 
     return jobId;
   }
 
+  private tryToStartNext(): void {
+    while (this.processing.size < this.maxWorkers && this.waiting.length > 0) {
+      const nextJobId = this.waiting.shift()!;
+      const processReviewCb = this.jobHandlers.get(nextJobId)!;
+      this.processReview(nextJobId, processReviewCb);
+    }
+  }
+
   private async processReview(
-    jobId: string, id: number, processReviewCb: (jobId: string) => Promise<void>,
+    jobId: string, processReviewCb: (jobId: string) => Promise<void>,
   ): Promise<void> {
     const job = this.jobs.get(jobId);
     if (!job) {
@@ -66,10 +83,15 @@ export class ReviewJobQueue {
       job.error = error instanceof Error ? error.message : String(error);
       console.error(`Review job ${jobId} failed with exception:`, error);
     } finally {
+      this.processing.delete(jobId);
+      this.jobHandlers.delete(jobId);
+      
+      // Try to start next waiting job
+      this.tryToStartNext();
+      
       // Clean up job after a delay to allow status checking
       setTimeout(() => {
         this.jobs.delete(jobId);
-        this.processing.delete(jobId);
         console.log(`Cleaned up completed job ${jobId}`);
       }, 60000); // Keep job info for 1 minute
     }
@@ -91,7 +113,9 @@ export class ReviewJobQueue {
       running,
       completed,
       failed,
+      waiting: this.waiting.length,
       maxSize: this.maxQueueSize,
+      maxWorkers: this.maxWorkers,
     };
   }
 }

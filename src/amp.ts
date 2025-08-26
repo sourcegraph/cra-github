@@ -70,9 +70,9 @@ export async function execute(options: ExecuteCommandOptions = {}): Promise<stri
         const includePromptFile = promptFilePath ? `cat ${promptFilePath} | ` : '';
         const includeThread = threadId ? ` threads continue ${threadId}` : '';
         const includeDebug = debug ? ` --log-level debug ` : '';
-        // Use either settings file OR mcp config, not both (prefer mcp config)
-        const includeSettings = !mcpServers && settingsFilePath ? ` --settings-file ${settingsFilePath} ` : '';
-        const includeMcpConfig = mcpServers ? ` --mcp-config '${mcpConfigJson}' ` : '';
+        // Use settings file when provided (contains dynamic values like installation ID)
+        const includeSettings = settingsFilePath ? ` --settings-file ${settingsFilePath} ` : '';
+        const includeMcpConfig = !settingsFilePath && mcpServers ? ` --mcp-config '${mcpConfigJson}' ` : '';
         const includeResult = resultFilePath ? ` > ${resultFilePath}` : '';
             
         // Build the command string

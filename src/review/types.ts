@@ -49,6 +49,7 @@ export interface JobInfo {
   started?: number;
   completed?: number;
   id?: number;
+  installationId: number;
   result?: ReviewResult;
   error?: string;
 }
