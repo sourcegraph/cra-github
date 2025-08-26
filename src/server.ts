@@ -27,7 +27,7 @@ const reviewQueue = new ReviewJobQueue(queueConfig.max_queue_size, queueConfig.m
 // Set the review queue for the github routes
 setReviewQueue(reviewQueue);
 
-// Mount GitHub routes (including OAuth and webhook)
+// Mount GitHub routes (including webhook)
 app.route('/github', github);
 
 // Mount MCP routes

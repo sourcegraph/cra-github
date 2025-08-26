@@ -27,7 +27,7 @@ const InstallationEventSchema = z.object({
     account: z.object({
       id: z.number(),
       login: z.string(),
-    }),
+    }).optional(),
   }),
   repositories: z.array(z.object({
     id: z.number(),

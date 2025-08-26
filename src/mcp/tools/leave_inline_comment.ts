@@ -19,8 +19,10 @@ export async function leaveInlineComment(
     const { message, owner, repo, pr_number, path, line, commit_sha } = args;
 
     // Get installation ID from environment
-    const installationId = parseInt(process.env.GITHUB_INSTALLATION_ID || '0');
+    const installationIdStr = process.env.GITHUB_INSTALLATION_ID || '0';
+    const installationId = parseInt(installationIdStr);    
     if (!installationId) {
+      console.error('❌ GITHUB_INSTALLATION_ID environment variable is missing or invalid');
       throw new Error('GITHUB_INSTALLATION_ID environment variable is required');
     }
 

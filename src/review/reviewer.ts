@@ -57,6 +57,8 @@ export const reviewDiff = async (diffContent: string, mrDetailsContent: string, 
         }
       };
       
+      console.log('🔧 Amp settings with installation ID:', JSON.stringify(settings['amp.mcpServers']?.github?.env, null, 2));
+      
       writeFileSync(settingsFilePath, JSON.stringify(settings, null, 2), 'utf8');
 
       const threadId = await newThread(tempDir);
