@@ -18,13 +18,7 @@ export async function leaveInlineComment(
   try {
     const { message, owner, repo, pr_number, path, line, commit_sha } = args;
 
-    // Get installation ID from environment
-    const installationId = parseInt(process.env.GITHUB_INSTALLATION_ID || '0', 10);
-    if (!installationId) {
-      throw new Error('GITHUB_INSTALLATION_ID environment variable is required');
-    }
-
-    const githubClient = GitHubClient.forInstallation(config, installationId);
+    const githubClient = GitHubClient.fromEnv(config);
 
     console.log('🎯 Creating inline comment via PR review:', { path, line });
     
@@ -54,7 +48,7 @@ export async function leaveInlineComment(
       owner, 
       repo, 
       pr_number, 
-      message,
+      '', // Empty body to avoid duplication
       'COMMENT',
       [{
         path,

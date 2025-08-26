@@ -19,13 +19,7 @@ export async function getPRComments(
   try {
     const { owner, repo, pr_number } = args;
 
-    // Get installation ID from environment
-    const installationId = parseInt(process.env.GITHUB_INSTALLATION_ID || '0', 10);
-    if (!installationId) {
-      throw new Error('GITHUB_INSTALLATION_ID environment variable is required');
-    }
-
-    const githubClient = GitHubClient.forInstallation(config, installationId);
+    const githubClient = GitHubClient.fromEnv(config);
 
     const comments = await githubClient.getPRComments(owner, repo, pr_number);
     

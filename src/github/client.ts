@@ -9,13 +9,30 @@ export class GitHubClient {
 
   constructor(config: Config, installationId?: number) {
     this.config = config;
-    this.installationId = installationId;
+    
+    // If no installationId provided, try to get from environment
+    if (installationId === undefined) {
+      const envId = parseInt(process.env.GITHUB_INSTALLATION_ID || '0', 10);
+      this.installationId = envId || undefined;
+    } else {
+      this.installationId = installationId;
+    }
+    
+    // Validate that we have some form of authentication
+    if (!this.installationId && !config.github.token) {
+      throw new Error('Missing authentication: set GITHUB_INSTALLATION_ID env var or github.token in config.yml');
+    }
+    
     const githubConfig = config.github;
-    this.baseUrl = githubConfig.base_url.replace(/\/$/, '');
+    this.baseUrl = (githubConfig.base_url ?? 'https://api.github.com').replace(/\/$/, '');
   }
 
   static forInstallation(config: Config, installationId: number): GitHubClient {
     return new GitHubClient(config, installationId);
+  }
+
+  static fromEnv(config: Config): GitHubClient {
+    return new GitHubClient(config);
   }
 
   private async getAuthHeaders(): Promise<Record<string, string>> {

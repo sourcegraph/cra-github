@@ -11,6 +11,9 @@ const github = new Hono();
 // Initialize config for webhook route
 const config: Config = getConfig();
 
+// PR actions that trigger code reviews
+const REVIEW_TRIGGER_ACTIONS = ['opened', 'reopened', 'ready_for_review'];
+
 // We'll need to receive the reviewQueue from the main server
 let reviewQueue: ReviewJobQueue | null = null;
 
@@ -49,9 +52,9 @@ async function handleInstallationEvent(payload: unknown) {
  * Handle pull request events
  */
 async function handlePullRequestEvent(payload: GitHubPullRequestEvent) {
-  // Check if this is an action we care about (opened, reopened, synchronize)
+  // Check if this is an action we care about
   const action = payload.action;
-  if (!['opened', 'reopened', 'synchronize'].includes(action)) {
+  if (!REVIEW_TRIGGER_ACTIONS.includes(action)) {
     return { message: 'Action ignored' };
   }
 
