@@ -1,5 +1,4 @@
-import { GitHubClient } from '../../github/client.js';
-import { Config } from '../../config.js';
+import { getCurrentCollector } from '../../review/comment-collector.js';
 
 export interface LeaveGeneralCommentArgs {
   message: string;
@@ -9,21 +8,27 @@ export interface LeaveGeneralCommentArgs {
 }
 
 export async function leaveGeneralComment(
-  args: LeaveGeneralCommentArgs,
-  config: Config
-): Promise<{ success: boolean; comment_id?: number; error?: string }> {
+  args: LeaveGeneralCommentArgs
+): Promise<{ success: boolean; error?: string }> {
   try {
-    const { message, owner, repo, pr_number } = args;
+    const { message } = args;
 
-    const githubClient = GitHubClient.fromEnv(config);
-    const response = await githubClient.createPRComment(owner, repo, pr_number, message);
+    console.log('📝 Collecting general comment for later review');
+    
+    // Get session ID from environment (passed by the review process)
+    const sessionId = process.env.REVIEW_SESSION_ID;
+    if (!sessionId) {
+      throw new Error('No REVIEW_SESSION_ID found in environment. Review session not properly initialized.');
+    }
+    
+    const collector = getCurrentCollector(sessionId);
+    collector.addGeneralComment(message);
     
     return {
-      success: true,
-      comment_id: response.id
+      success: true
     };
   } catch (error) {
-    console.error('Failed to leave general comment:', error);
+    console.error('Failed to collect general comment:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'

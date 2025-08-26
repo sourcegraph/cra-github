@@ -149,10 +149,7 @@ class GitHubMCPServer {
           case 'leave_general_comment': {
             console.log(`🗨️  Executing leave_general_comment...`);
             const validatedArgs = validateLeaveGeneralCommentArgs(args);
-            const result = await leaveGeneralComment(
-              validatedArgs,
-              this.config
-            );
+            const result = await leaveGeneralComment(validatedArgs);
             console.log(`✅ leave_general_comment completed in ${Date.now() - startTime}ms`);
             return {
               content: [
@@ -167,10 +164,7 @@ class GitHubMCPServer {
           case 'leave_inline_comment': {
             console.log(`📝 Executing leave_inline_comment...`);
             const validatedArgs = validateLeaveInlineCommentArgs(args);
-            const result = await leaveInlineComment(
-              validatedArgs,
-              this.config
-            );
+            const result = await leaveInlineComment(validatedArgs);
             console.log(`✅ leave_inline_comment completed in ${Date.now() - startTime}ms`);
             return {
               content: [

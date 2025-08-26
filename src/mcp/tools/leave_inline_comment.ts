@@ -1,5 +1,4 @@
-import { GitHubClient } from '../../github/client.js';
-import { Config } from '../../config.js';
+import { getCurrentCollector } from '../../review/comment-collector.js';
 
 export interface LeaveInlineCommentArgs {
   message: string;
@@ -12,57 +11,27 @@ export interface LeaveInlineCommentArgs {
 }
 
 export async function leaveInlineComment(
-  args: LeaveInlineCommentArgs,
-  config: Config
-): Promise<{ success: boolean; review_id?: number; error?: string }> {
+  args: LeaveInlineCommentArgs
+): Promise<{ success: boolean; error?: string }> {
   try {
-    const { message, owner, repo, pr_number, path, line, commit_sha } = args;
+    const { message, path, line } = args;
 
-    const githubClient = GitHubClient.fromEnv(config);
-
-    console.log('🎯 Creating inline comment via PR review:', { path, line });
+    console.log('📝 Collecting inline comment for later review:', { path, line });
     
-    // Get commit SHA if not provided
-    let actualCommitSha = commit_sha;
+    // Get session ID from environment (passed by the review process)
+    const sessionId = process.env.REVIEW_SESSION_ID;
+    if (!sessionId) {
+      throw new Error('No REVIEW_SESSION_ID found in environment. Review session not properly initialized.');
+    }
     
-    if (!actualCommitSha) {
-      console.log('🔍 Fetching commit SHA from PR...');
-      try {
-        const prInfo = await githubClient.getPRInfo(owner, repo, pr_number);
-        actualCommitSha = prInfo.head.sha;
-        console.log('✅ Using commit SHA:', actualCommitSha?.substring(0, 8));
-      } catch (error) {
-        console.log('⚠️ Could not fetch PR info for commit SHA:', error);
-        throw new Error('Cannot create inline comment without valid commit SHA');
-      }
-    }
-
-    if (!actualCommitSha) {
-      throw new Error('Missing required commit SHA for inline comment');
-    }
-
-    console.log('📍 Creating PR review with inline comment at:', { path, line });
-
-    // Create a review with inline comment
-    const response = await githubClient.createPRReview(
-      owner, 
-      repo, 
-      pr_number, 
-      '', // Empty body to avoid duplication
-      'COMMENT',
-      [{
-        path,
-        line,
-        body: message
-      }]
-    );
+    const collector = getCurrentCollector(sessionId);
+    collector.addInlineComment(path, line, message);
     
     return {
-      success: true,
-      review_id: response.id
+      success: true
     };
   } catch (error) {
-    console.error('Failed to leave inline comment:', error);
+    console.error('Failed to collect inline comment:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'

@@ -2,6 +2,7 @@ import { getConfig } from "../config.js";
 import { reviewDiff } from "../review/reviewer.js";
 import { GitHubClient } from "./client.js";
 import { CHECK_STATUS, CHECK_CONCLUSION, PRDetails, GitHubPullRequestEvent } from "./types.js";
+import { startReviewSession, endReviewSession } from "../review/comment-collector.js";
 
 export async function processReview(
     jobId: string, 
@@ -61,24 +62,61 @@ export async function processReview(
 
       const prDetailsContent = `Repository: ${payload.repository.full_name}, PR Number: ${prDetails.pr_number}, Commit SHA: ${prDetails.commit_sha}, PR URL: ${prDetails.pr_url}`;
 
+      console.log(`Starting review session for job ${jobId}`);
+      const sessionId = `session-${jobId}`;
+      startReviewSession(sessionId);
+
       console.log(`Calling reviewDiff() for job ${jobId}`);
-      const reviewResult = await reviewDiff(diffContent, prDetailsContent, installationId);
+      await reviewDiff(diffContent, prDetailsContent, installationId, sessionId);
       console.log(`Review completed for job ${jobId}`);
 
-      // Update check run with success
+      // Collect all comments from the review session
+      const collector = endReviewSession(sessionId);
+      console.log(`Collected ${collector.getInlineComments().length} inline comments and ${collector.getGeneralComments().length} general comments`);
+
+      // Post aggregated review if there are any comments
+      if (collector.hasComments()) {
+        console.log('📋 Posting aggregated PR review...');
+        const reviewSummary = collector.getReviewSummary();
+        const inlineComments = collector.getInlineComments();
+        
+        await githubClient.createPRReview(
+          owner,
+          repo,
+          prNumber,
+          reviewSummary,
+          'COMMENT',
+          inlineComments.map(comment => ({
+            path: comment.path,
+            line: comment.line,
+            body: comment.body
+          }))
+        );
+        console.log('✅ PR review posted successfully');
+      }
+
+      // Update check run with success (simplified since review details are now in PR review)
       await githubClient.updateCheckRun(owner, repo, checkRun.id, {
         status: CHECK_STATUS.COMPLETED,
         conclusion: CHECK_CONCLUSION.SUCCESS,
         output: {
           title: 'Code Review Completed',
-          summary: 'Code review has been completed successfully.',
-          text: reviewResult.result || 'Review completed successfully.',
+          summary: 'Code review has been completed successfully. See PR conversation for details.',
         },
         details_url: prUrl,
       });
 
     } catch (error) {
       console.error(`Review job ${jobId} failed with exception:`, error);
+      
+      // End review session if it was started
+      try {
+        const sessionId = `session-${jobId}`;
+        endReviewSession(sessionId);
+      } catch {
+        console.log('No active review session to end');
+      }
+      
       // Post FAILED check run for exceptions
       await postFailureCheckRun(githubClient, payload, error instanceof Error ? error.message : String(error));
   }

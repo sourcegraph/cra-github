@@ -12,7 +12,7 @@ const github = new Hono();
 const config: Config = getConfig();
 
 // PR actions that trigger code reviews
-const REVIEW_TRIGGER_ACTIONS = ['opened', 'reopened', 'ready_for_review'];
+const REVIEW_TRIGGER_ACTIONS = ['opened', 'reopened', 'ready_for_review', 'review_requested'];
 
 // We'll need to receive the reviewQueue from the main server
 let reviewQueue: ReviewJobQueue | null = null;
@@ -56,6 +56,16 @@ async function handlePullRequestEvent(payload: GitHubPullRequestEvent) {
   const action = payload.action;
   if (!REVIEW_TRIGGER_ACTIONS.includes(action)) {
     return { message: 'Action ignored' };
+  }
+
+  // For review_requested actions, only respond if our bot was requested
+  if (action === 'review_requested') {
+    const requestedReviewer = (payload as any).requested_reviewer;
+    if (!requestedReviewer || requestedReviewer.type !== 'Bot') {
+      return { message: 'Review not requested for this bot' };
+    }
+    // You could add additional bot name checking here if needed
+    console.log('Re-review requested for bot:', requestedReviewer.login);
   }
 
   console.log(`Processing PR ${payload.pull_request.number} action: ${action}`);
