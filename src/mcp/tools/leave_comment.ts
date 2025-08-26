@@ -16,7 +16,7 @@ export async function leaveGeneralComment(
     const { message, owner, repo, pr_number } = args;
 
     // Get installation ID from environment
-    const installationId = parseInt(process.env.GITHUB_INSTALLATION_ID || '0');
+    const installationId = parseInt(process.env.GITHUB_INSTALLATION_ID || '0', 10);
     if (!installationId) {
       throw new Error('GITHUB_INSTALLATION_ID environment variable is required');
     }

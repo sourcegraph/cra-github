@@ -13,16 +13,10 @@ import {
 import { getConfig, Config } from '../config.js';
 import { leaveGeneralComment } from './tools/leave_comment.js';
 import { leaveInlineComment } from './tools/leave_inline_comment.js';
-import { createCheckRun } from './tools/create_check_run.js';
-import { getPRInfo } from './tools/get_pr_info.js';
-import { triggerReview } from './tools/trigger_review.js';
 import { getPRComments } from './tools/get_pr_comments.js';
 import {
   validateLeaveGeneralCommentArgs,
   validateLeaveInlineCommentArgs,
-  validateCreateCheckRunArgs,
-  validateGetPRInfoArgs,
-  validateTriggerReviewArgs,
   validateGetPRCommentsArgs
 } from './validation.js';
 
@@ -119,108 +113,6 @@ class GitHubMCPServer {
             },
           },
           {
-            name: 'create_check_run',
-            description: 'Create or update check run status',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                owner: {
-                  type: 'string',
-                  description: 'Repository owner',
-                },
-                repo: {
-                  type: 'string',
-                  description: 'Repository name',
-                },
-                commit_sha: {
-                  type: 'string',
-                  description: 'Commit SHA to create check run for',
-                },
-                status: {
-                  type: 'string',
-                  enum: ['queued', 'in_progress', 'completed'],
-                  description: 'Check run status',
-                },
-                conclusion: {
-                  type: 'string',
-                  enum: ['success', 'failure', 'neutral', 'cancelled', 'skipped', 'timed_out'],
-                  description: 'Check run conclusion (optional)',
-                },
-                title: {
-                  type: 'string',
-                  description: 'Check run title (optional)',
-                },
-                summary: {
-                  type: 'string',
-                  description: 'Check run summary (optional)',
-                },
-                details_url: {
-                  type: 'string',
-                  description: 'Details URL for the check run (optional)',
-                },
-              },
-              required: ['owner', 'repo', 'commit_sha', 'status'],
-            },
-          },
-          {
-            name: 'get_pr_info',
-            description: 'Get pull request details',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                owner: {
-                  type: 'string',
-                  description: 'Repository owner',
-                },
-                repo: {
-                  type: 'string',
-                  description: 'Repository name',
-                },
-                pr_number: {
-                  type: 'number',
-                  description: 'Pull request number',
-                },
-                include_diff: {
-                  type: 'boolean',
-                  description: 'Include diff content (optional, default: false)',
-                  default: false,
-                },
-              },
-              required: ['owner', 'repo', 'pr_number'],
-            },
-          },
-          {
-            name: 'trigger_review',
-            description: 'Start code review process',
-            inputSchema: {
-              type: 'object',
-              properties: {
-                owner: {
-                  type: 'string',
-                  description: 'Repository owner',
-                },
-                repo: {
-                  type: 'string',
-                  description: 'Repository name',
-                },
-                pr_number: {
-                  type: 'number',
-                  description: 'Pull request number',
-                },
-                commit_sha: {
-                  type: 'string',
-                  description: 'Specific commit SHA to review (optional)',
-                },
-                force: {
-                  type: 'boolean',
-                  description: 'Force re-review even if already reviewed (optional)',
-                  default: false,
-                },
-              },
-              required: ['owner', 'repo', 'pr_number'],
-            },
-          },
-          {
             name: 'get_pr_comments',
             description: 'Get all comments on a pull request',
             inputSchema: {
@@ -290,59 +182,6 @@ class GitHubMCPServer {
             };
           }
 
-          case 'create_check_run': {
-            console.log(`☑️  Executing create_check_run...`);
-            const validatedArgs = validateCreateCheckRunArgs(args);
-            const result = await createCheckRun(
-              validatedArgs,
-              this.config
-            );
-            console.log(`✅ create_check_run completed in ${Date.now() - startTime}ms`);
-            return {
-              content: [
-                {
-                  type: 'text',
-                  text: JSON.stringify(result, null, 2),
-                },
-              ],
-            };
-          }
-
-          case 'get_pr_info': {
-            console.log(`ℹ️  Executing get_pr_info...`);
-            const validatedArgs = validateGetPRInfoArgs(args);
-            const result = await getPRInfo(
-              validatedArgs,
-              this.config
-            );
-            console.log(`✅ get_pr_info completed in ${Date.now() - startTime}ms`);
-            return {
-              content: [
-                {
-                  type: 'text',
-                  text: JSON.stringify(result, null, 2),
-                },
-              ],
-            };
-          }
-
-          case 'trigger_review': {
-            console.log(`🔄 Executing trigger_review...`);
-            const validatedArgs = validateTriggerReviewArgs(args);
-            const result = await triggerReview(
-              validatedArgs,
-              this.config
-            );
-            console.log(`✅ trigger_review completed in ${Date.now() - startTime}ms`);
-            return {
-              content: [
-                {
-                  type: 'text',
-                  text: JSON.stringify(result, null, 2),
-                },
-              ],
-            };
-          }
 
           case 'get_pr_comments': {
             console.log(`💬 Executing get_pr_comments...`);
