@@ -45,3 +45,6 @@ data/
 # Keys
 *.pem
 *.key
+
+# Test files
+test_*.sh
