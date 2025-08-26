@@ -10,7 +10,7 @@ import { Config, getConfig } from './config.js';
 import { ReviewJobQueue } from './review/review-queue.js';
 import { reviewDiff } from './review/reviewer.js';
 import { github, setReviewQueue } from './routes/github.js';
-import { createMCPRoutes } from './mcp/http-server.js';
+
 
 const app = new Hono();
 
@@ -30,8 +30,7 @@ setReviewQueue(reviewQueue);
 // Mount GitHub routes (including OAuth and webhook)
 app.route('/github', github);
 
-// Mount MCP routes
-app.route('/mcp', createMCPRoutes());
+
 
 // Routes
 app.get('/', (c) => {
@@ -43,8 +42,7 @@ app.get('/', (c) => {
       install: '/github/install',
       webhook: '/github/webhook',
       health: '/health',
-      queue_status: '/queue/status',
-      mcp: '/mcp'
+      queue_status: '/queue/status'
     }
   });
 });
