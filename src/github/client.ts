@@ -113,6 +113,11 @@ export class GitHubClient {
         text?: string;
       };
       details_url?: string;
+      actions?: Array<{
+        label: string;
+        description: string;
+        identifier: string;
+      }>;
     }
   ): Promise<any> {
     const url = `${this.baseUrl}/repos/${owner}/${repo}/check-runs`;
@@ -124,6 +129,7 @@ export class GitHubClient {
       ...(options.conclusion && { conclusion: options.conclusion }),
       ...(options.output && { output: options.output }),
       ...(options.details_url && { details_url: options.details_url }),
+      ...(options.actions && { actions: options.actions }),
     };
 
     const response = await this.makeRequest(url, {
@@ -152,6 +158,11 @@ export class GitHubClient {
         text?: string;
       };
       details_url?: string;
+      actions?: Array<{
+        label: string;
+        description: string;
+        identifier: string;
+      }>;
     }
   ): Promise<any> {
     const url = `${this.baseUrl}/repos/${owner}/${repo}/check-runs/${checkRunId}`;
