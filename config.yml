@@ -9,10 +9,10 @@ queue:
   max_queue_size: 100
   retry_after_seconds: 60
 
-# Diff splitting configuration  
+# Diff splitting configuration
 diff_splitting:
-  max_chunk_size: 500000      # 500k characters per chunk
-  max_concurrent: 3   
+  max_chunk_size: 500000 # 500k characters per chunk
+  max_concurrent: 3
 
 server:
   port: "${PORT:-5053}"
@@ -28,8 +28,8 @@ amp:
       github:
         command: "sh"
         args:
-        - "-c"
-        - "cd ${GITHUB_APP_CWD} && pnpm run mcp"
+          - "-c"
+          - "cd ${GITHUB_APP_CWD} && pnpm run mcp"
         env:
           GITHUB_APP_CWD: "${GITHUB_APP_CWD}"
           GITHUB_APP_ID: "${GITHUB_APP_ID}"
@@ -38,7 +38,8 @@ amp:
   prompt_template: |
     Review this code diff as a senior developer. Look for bugs, clear logic errors, and code quality problems.
     Flag significant security concerns (leaked credentials, SQL injection, etc.), but do not mark minor concerns as issues.
-    Likewise, flag significant performance concerns (memory leaks, deadlocks, long-lived requests), but do not mark minor concerns as issues. Do not use the oracle to review code.
+    Likewise, flag significant performance concerns (memory leaks, deadlocks, long-lived requests), but do not mark minor concerns as issues.
+    Do not use the oracle to review code.
 
     Focus on:
     - Logic errors
@@ -53,10 +54,7 @@ amp:
     Diff to review:
     __DIFF_CONTENT__
 
-    When reviewing code:
-    1. Look at the pull request details to fetch the context before reviewing.
-    2. Review the diff content to identify issues.
-    3. Leave specific inline comments or code suggestions for each issue found.
+    Review the diff content to identify issues. If you find any issues, leave specific inline comments for each issue found.
 
     Always leave actionable, specific comments with suggested fixes.
 
@@ -74,47 +72,10 @@ amp:
     * List out critical issues and blockers that need to be addressed
     * Any high-level feedback or suggestions
 
-    IMPORTANT: If you find any issues, include all of them in a JSON block at the end with the following format:
-    ```json
-    [
-      {
-        "path": "filename.ext",
-        "line": 42,
-        "line_type": "new"|"old",
-        "message": "Description of the issue",
-        "suggested_fix": "if (user == \"admin\") {"|null
-      }
-    ]
-    ```
-
-    line_type must be one of "new" or "old". This is because in a diff view, the same line number can exist on both sides:
-      Line 15 in the source (old)
-      Line 15 in the destination (new)
-      
-    A suggested_fix is an optional short snippet of code that will directly replace the single full line of code the indicated issue is on in order to fix the issue.
-    Because the suggested_fix will only overwrite the single line of code with the issue (the issue line), the suggested_fix can be either:
-      1. One line of code that will replace the issue line directly to address the issue. Here's an example where we fix a typo in the method invocation:
-        Issue line:
-        System.out.printl(foo);
-        
-        suggested_fix:
-        System.out.println(foo);
-
-      2. Multiple lines of code where the first line is the issue line and all subsequent lines are net new lines to be inserted after the issue line.
-      Because the first line in this multi-line suggested_fix will directly replace the existing issue line, the first line can be unchanged if the suggested_fix is a pure insertion after the issue line,
-      or the first line can differ from the issue line if the goal is to edit the issue line AND insert net new lines directly below it. Here's a pure insertion example where we add an auth check:
-        Issue line:
-        def access_data(user):
-        
-        suggested_fix:
-        def access_user_data(user):\n\n    if not user: return\n
-    
-    Any other cases are too complex to provide a simple suggested_fix for, so provide null as the suggested_fix value.
-
   tools:
     - name: leave_general_comment
       description: Leave general comments on pull requests
-      instructions: 
+      instructions:
         - "Use this tool to leave general comments on the pull request"
         - "This will post your comment to the overall pull request discussion"
         - "Use for summary comments, overall feedback, or general observations"
@@ -122,7 +83,7 @@ amp:
         - "Example: 'Overall the code looks good, just a few minor suggestions'"
     - name: leave_inline_comment
       description: Leave inline comments on specific lines in pull requests
-      instructions: 
+      instructions:
         - "Use this tool to leave comments on specific lines of code"
         - "This will post your comment directly on the line in the diff view via PR review"
         - "Required: message, owner, repo, pr_number, path, line"
@@ -130,7 +91,7 @@ amp:
         - "Example: Comment on line 25 of src/auth.js about missing error handling"
     - name: get_pr_comments
       description: Get all comments on a pull request
-      instructions: 
+      instructions:
         - "Use to retrieve existing comments on the pull request"
         - "Required: owner, repo, pr_number"
         - "Returns array of comments and total count"
