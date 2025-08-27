@@ -286,17 +286,38 @@ export class GitHubClient {
   }
 
   async getPRComments(owner: string, repo: string, prNumber: number): Promise<any[]> {
-    const url = `${this.baseUrl}/repos/${owner}/${repo}/issues/${prNumber}/comments`;
-    
-    const response = await this.makeRequest(url, {
-      method: 'GET',
-    });
+    // Fetch both issue comments (general discussion) and review comments (inline code comments)
+    const [issueCommentsResponse, reviewCommentsResponse] = await Promise.all([
+      // General PR discussion comments
+      this.makeRequest(`${this.baseUrl}/repos/${owner}/${repo}/issues/${prNumber}/comments`, {
+        method: 'GET',
+      }),
+      // Inline code review comments  
+      this.makeRequest(`${this.baseUrl}/repos/${owner}/${repo}/pulls/${prNumber}/comments`, {
+        method: 'GET',
+      })
+    ]);
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`GitHub API error: ${response.status} ${response.statusText} - ${errorText}`);
+    if (!issueCommentsResponse.ok) {
+      const errorText = await issueCommentsResponse.text();
+      throw new Error(`GitHub API error (issue comments): ${issueCommentsResponse.status} ${issueCommentsResponse.statusText} - ${errorText}`);
     }
 
-    return await response.json();
+    if (!reviewCommentsResponse.ok) {
+      const errorText = await reviewCommentsResponse.text();
+      throw new Error(`GitHub API error (review comments): ${reviewCommentsResponse.status} ${reviewCommentsResponse.statusText} - ${errorText}`);
+    }
+
+    const issueComments = await issueCommentsResponse.json();
+    const reviewComments = await reviewCommentsResponse.json();
+
+    // Combine both types with a type indicator
+    const allComments = [
+      ...issueComments.map((comment: any) => ({ ...comment, comment_type: 'issue' })),
+      ...reviewComments.map((comment: any) => ({ ...comment, comment_type: 'review' }))
+    ];
+
+    // Sort by creation date
+    return allComments.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
   }
 }
