@@ -86,9 +86,15 @@ export async function processReview(
           console.log(`📝 Collected ${inlineComments.length} inline comments and ${generalComments.length} general comments`);
 
           // Create review summary from general comments
-          const reviewSummary = generalComments.length > 0
+          let reviewSummary = generalComments.length > 0
             ? generalComments.map(c => c.message).join('\n\n')
             : 'Code review completed.';
+
+          // Append Amp thread URL if available
+          if (reviewResult.threadId && config.amp.server_url) {
+            const threadUrl = `${config.amp.server_url}/threads/${reviewResult.threadId}`;
+            reviewSummary += `\n\n[View this review on Amp](${threadUrl})`;
+          }
 
           // Post aggregated review
           console.log('📋 Posting aggregated PR review...');
@@ -101,7 +107,9 @@ export async function processReview(
             inlineComments.map(comment => ({
               path: comment.path,
               line: comment.line,
-              body: comment.message
+              body: comment.suggested_fix
+                ? `${comment.message}\n\n\`\`\`suggestion\n${comment.suggested_fix}\n\`\`\``
+                : comment.message
             }))
           );
           console.log('✅ PR review posted successfully');

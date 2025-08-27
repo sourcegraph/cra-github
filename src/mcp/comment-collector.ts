@@ -5,6 +5,7 @@ export interface CommentData {
   message: string;
   path?: string;    // Only for inline comments
   line?: number;    // Only for inline comments
+  suggested_fix?: string; // Only for inline comments
 }
 
 export class FileBasedCommentCollector {
@@ -16,12 +17,13 @@ export class FileBasedCommentCollector {
     writeFileSync(this.filePath, '', 'utf8');
   }
 
-  addInlineComment(path: string, line: number, message: string): void {
+  addInlineComment(path: string, line: number, message: string, suggested_fix?: string): void {
     const comment: CommentData = {
       type: 'inline',
       message,
       path,
-      line
+      line,
+      suggested_fix
     };
 
     this.appendComment(comment);

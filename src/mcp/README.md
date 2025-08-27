@@ -23,7 +23,6 @@ Leave inline comments on specific lines in pull requests.
 - `pr_number` (number, required): Pull request number
 - `path` (string, required): File path for the inline comment
 - `line` (number, required): Line number for the inline comment
-- `commit_sha` (string, optional): Commit SHA (will be fetched if not provided)
 
 ### 3. `get_pr_comments`
 Get all comments on a pull request.
@@ -108,7 +107,7 @@ The tools are designed to work together in a typical code review workflow:
 ## Development
 
 The tools are organized in the `/src/mcp/tools/` directory:
-- `leave_comment.ts` - General comment functionality
+- `leave_general_comment.ts` - General comment functionality
 - `leave_inline_comment.ts` - Inline comment functionality
 - `get_pr_comments.ts` - PR comments retrieval
 

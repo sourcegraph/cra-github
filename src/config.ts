@@ -12,8 +12,6 @@ const ConfigSchema = z.object({
     base_url: z.string(),
     token: z.string().optional(),
     check_name: z.string(),
-    development_mode: z.boolean(),
-    bot_username: z.string(),
     webhook_secret: z.string().optional(),
   }),
   queue: z.object({
@@ -21,16 +19,12 @@ const ConfigSchema = z.object({
     max_queue_size: z.coerce.number(),
     retry_after_seconds: z.coerce.number(),
   }),
-  diff_splitting: z.object({
-    max_chunk_size: z.coerce.number(),
-    max_concurrent: z.coerce.number(),
-  }),
+
   server: z.object({
     port: z.string(),
     debug: z.string(),
   }),
   amp: z.object({
-    timeout: z.string(),
     command: z.string(),
     server_url: z.string(),
     settings: z.object({

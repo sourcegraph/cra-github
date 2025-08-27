@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { LeaveGeneralCommentArgs } from './tools/leave_comment.js';
+import { LeaveGeneralCommentArgs } from './tools/leave_general_comment.js';
 import { LeaveInlineCommentArgs } from './tools/leave_inline_comment.js';
 import { GetPRCommentsArgs } from './tools/get_pr_comments.js';
 
@@ -19,7 +19,7 @@ const LeaveInlineCommentArgsSchema = z.object({
   message: z.string(),
   path: z.string(),
   line: z.number(),
-  commit_sha: z.string().optional(),
+  suggested_fix: z.string().optional(),
 });
 
 

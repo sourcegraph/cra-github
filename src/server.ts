@@ -8,7 +8,6 @@ import { logger } from 'hono/logger';
 import { prettyJSON } from 'hono/pretty-json';
 import { Config, getConfig } from './config.js';
 import { ReviewJobQueue } from './review/review-queue.js';
-import { reviewDiff } from './review/reviewer.js';
 import { github, setReviewQueue } from './routes/github.js';
 
 
@@ -67,40 +66,12 @@ app.get('/queue/status', (c) => {
 app.get('/jobs/:jobId', (c) => {
   const jobId = c.req.param('jobId');
   const jobInfo = reviewQueue.getJobStatus(jobId);
-  
+
   if (!jobInfo) {
     return c.json({ error: 'Job not found' }, 404);
   }
-  
+
   return c.json(jobInfo);
-});
-
-// Test endpoint for reviewDiff function
-app.post('/test/review', async (c) => {
-  try {
-    const body = await c.req.json();
-    const { diffContent, prDetails } = body;
-    
-    if (!diffContent || !prDetails) {
-      return c.json({ error: 'Missing diffContent or prDetails' }, 400);
-    }
-
-    const prDetailsContent = `Repository: ${prDetails.repository_full_name}, PR Number: ${prDetails.pr_number}, Commit SHA: ${prDetails.commit_sha}, PR URL: ${prDetails.pr_url}`;
-    
-    // For testing purposes, use a dummy installation ID
-    const testInstallationId = 12345;
-    const result = await reviewDiff(diffContent, prDetailsContent, testInstallationId);
-    
-    return c.json({
-      success: true,
-      result
-    });
-  } catch (error) {
-    console.error('Test review error:', error);
-    return c.json({ 
-      error: error instanceof Error ? error.message : String(error) 
-    }, 500);
-  }
 });
 
 // Error handling

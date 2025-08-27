@@ -11,7 +11,7 @@ import {
   McpError,
 } from '@modelcontextprotocol/sdk/types.js';
 import { getConfig, Config } from '../config.js';
-import { leaveGeneralComment } from './tools/leave_comment.js';
+import { leaveGeneralComment } from './tools/leave_general_comment.js';
 import { leaveInlineComment } from './tools/leave_inline_comment.js';
 import { getPRComments } from './tools/get_pr_comments.js';
 import {
@@ -78,13 +78,13 @@ class GitHubMCPServer {
           },
           {
             name: 'leave_inline_comment',
-            description: 'Leave inline comments on specific lines in pull requests',
+            description: 'Leave inline comments on specific lines in pull requests. Can optionally include suggested fixes for trivial changes.',
             inputSchema: {
               type: 'object',
               properties: {
                 message: {
                   type: 'string',
-                  description: 'The comment message',
+                  description: 'The comment message explaining the issue or feedback',
                 },
                 owner: {
                   type: 'string',
@@ -106,9 +106,9 @@ class GitHubMCPServer {
                   type: 'number',
                   description: 'Line number for the inline comment',
                 },
-                commit_sha: {
+                suggested_fix: {
                   type: 'string',
-                  description: 'Commit SHA (optional - will be fetched if not provided)',
+                  description: 'Optional code suggestion to replace the current line(s). Only provide this for obvious/trivial fixes. The suggestion should be the exact replacement code without any markdown formatting.',
                 },
               },
               required: ['message', 'owner', 'repo', 'pr_number', 'path', 'line'],

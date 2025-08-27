@@ -1,25 +1,19 @@
 github:
   base_url: "https://api.github.com"
   check_name: "Amp Code Review"
-  development_mode: true
-  bot_username: "amp-code-review-agent"
 
 queue:
   max_workers: 20
   max_queue_size: 100
   retry_after_seconds: 60
 
-# Diff splitting configuration
-diff_splitting:
-  max_chunk_size: 500000 # 500k characters per chunk
-  max_concurrent: 3
+
 
 server:
   port: "${PORT:-5053}"
   debug: "${DEBUG:-false}"
 
 amp:
-  timeout: "${AMP_TIMEOUT}"
   command: "npx --yes @sourcegraph/amp@latest"
   server_url: "${AMP_SERVER_URL}"
   settings:
@@ -56,39 +50,40 @@ amp:
 
     Review the diff content to identify issues. If you find any issues, leave specific inline comments for each issue found.
 
-    Always leave actionable, specific comments with suggested fixes.
-
-    Suggestions are optional snippets of code that can directly replace the full line the indicated issue is on. If provided, the suggestion should be just code-- no thought process included.
-    If there is no simple code suggestion you can provide to fix the issue succinctly, provide null as the suggestion value instead.
-    Suggestions can only be left on "new" line_type issues, not on "old" issues. For "old" issues, the suggestion should be null.
+    Suggested fixes are optional snippets of code that can directly replace the full line the indicated issue is on for an inline comment.
+    If there is no simple code suggestion you can provide to fix the issue succinctly, do not provide a suggested fix.
 
     Tools available to complete the code review process:
     __TOOL_CONTENT__
 
-    After you have completed the code review process:
+    After you have completed the code review process, leave a single general comment.
+    This comment should NOT reiterate the issues already identified in inline comments. Instead, include:
+    * A brief summary of the diff's changes; include the goal of the changes and what they affect
+    * A tour of the changes-- recommend the best tour order for reviewing the changes. Identify the best place to start the review-— the part that conveys the core and helps in understanding the rest.
+    * (Optional) Any minor or vague considerations that were not obvious enough to be left as an inline comment-- don't repeat any inline comments.
 
-    Leave a general comment summarizing the review, including:
-    * A brief summary of the changes reviewed
-    * List out critical issues and blockers that need to be addressed
-    * Any high-level feedback or suggestions
+    Keep your tone professional and concise when commenting. No emojis.
 
   tools:
     - name: leave_general_comment
-      description: Leave general comments on pull requests
+      description: Leave general review comments on pull requests
       instructions:
-        - "Use this tool to leave general comments on the pull request"
-        - "This will post your comment to the overall pull request discussion"
-        - "Use for summary comments, overall feedback, or general observations"
+        - "Use this tool to leave a general review comment on the pull request"
+        - "This will post your comment as the top level comment on a review"
         - "Required: message, owner, repo, pr_number"
-        - "Example: 'Overall the code looks good, just a few minor suggestions'"
+        - "Example: 'The changes look good, but there are a few issues that need to be addressed'"
     - name: leave_inline_comment
       description: Leave inline comments on specific lines in pull requests
       instructions:
         - "Use this tool to leave comments on specific lines of code"
         - "This will post your comment directly on the line in the diff view via PR review"
         - "Required: message, owner, repo, pr_number, path, line"
-        - "Optional: commit_sha (will be fetched from PR if not provided)"
+        - "Optional: suggested_fix - provide exact replacement code for obvious/trivial fixes only"
+        - "For suggested_fix: only include the raw code replacement, no markdown formatting or explanations"
+        - "Use suggested_fix for simple fixes like typos, missing semicolons, variable name corrections, etc."
+        - "Do NOT use suggested_fix for complex changes, architectural decisions, or anything requiring explanation"
         - "Example: Comment on line 25 of src/auth.js about missing error handling"
+        - "Example with fix: Comment on typo with suggested_fix: 'const userName = req.body.username;'"
     - name: get_pr_comments
       description: Get all comments on a pull request
       instructions:

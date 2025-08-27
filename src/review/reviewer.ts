@@ -8,7 +8,7 @@ import { newThread, execute } from "../amp.js";
 
 export const reviewDiff = async (
   diffContent: string, 
-  mrDetailsContent: string, 
+  prDetailsContent: string, 
   installationId: number
 ) => {
 
@@ -26,7 +26,7 @@ export const reviewDiff = async (
       const ampConfig = config.amp;
       
       let promptContent = ampConfig.prompt_template
-        .replace(/__PR_DETAILS_CONTENT__/g, mrDetailsContent)
+        .replace(/__PR_DETAILS_CONTENT__/g, prDetailsContent)
         .replace(/__DIFF_CONTENT__/g, diffContent);
 
       // Add tools content
