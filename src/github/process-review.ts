@@ -81,6 +81,8 @@ export async function processReview(
           const inlineComments = comments.filter(c => c.type === 'inline');
           const generalComments = comments.filter(c => c.type === 'general');
 
+          // TODO(sayans): GitHub API allows <= 30 comments per review, so we need to add splitting logic if there are > 30 comments
+
           console.log(`📝 Collected ${inlineComments.length} inline comments and ${generalComments.length} general comments`);
 
           // Create review summary from general comments

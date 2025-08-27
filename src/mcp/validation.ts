@@ -11,11 +11,11 @@ const ownerRepoPr = z.object({
 });
 
 // Schema definitions
-const LeaveGeneralCommentArgsSchema = ownerRepoPr.extend({
+const LeaveGeneralCommentArgsSchema = z.object({
   message: z.string(),
 });
 
-const LeaveInlineCommentArgsSchema = ownerRepoPr.extend({
+const LeaveInlineCommentArgsSchema = z.object({
   message: z.string(),
   path: z.string(),
   line: z.number(),

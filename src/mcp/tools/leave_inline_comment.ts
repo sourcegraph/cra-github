@@ -2,9 +2,6 @@ import { getCollector } from '../comment-collector.js';
 
 export interface LeaveInlineCommentArgs {
   message: string;
-  owner: string;
-  repo: string;
-  pr_number: number;
   path: string;
   line: number;
   commit_sha?: string;

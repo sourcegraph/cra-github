@@ -2,9 +2,6 @@ import { getCollector } from '../comment-collector.js';
 
 export interface LeaveGeneralCommentArgs {
   message: string;
-  owner: string;
-  repo: string;
-  pr_number: number;
 }
 
 export async function leaveGeneralComment(
