@@ -1,4 +1,4 @@
-import { getCurrentCollector } from '../../review/comment-collector.js';
+import { getCollector } from '../comment-collector.js';
 
 export interface LeaveGeneralCommentArgs {
   message: string;
@@ -15,8 +15,12 @@ export async function leaveGeneralComment(
 
     console.log('📝 Collecting general comment for later review');
     
-    const collector = getCurrentCollector();
-    collector.addGeneralComment(message);
+    const collector = getCollector();
+    if (collector) {
+      collector.addGeneralComment(message);
+    } else {
+      console.log('⚠️ No collector available, comment will be skipped');
+    }
     
     return {
       success: true

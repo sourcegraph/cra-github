@@ -19,6 +19,7 @@ import {
   validateLeaveInlineCommentArgs,
   validateGetPRCommentsArgs
 } from './validation.js';
+import { initializeCollector } from './comment-collector.js';
 
 class GitHubMCPServer {
   private server: Server;
@@ -39,6 +40,7 @@ class GitHubMCPServer {
     );
 
     this.config = getConfig();
+    initializeCollector(); // Initialize comment collector
     this.setupToolHandlers();
   }
 

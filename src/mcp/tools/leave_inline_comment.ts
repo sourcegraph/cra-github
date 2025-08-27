@@ -1,4 +1,4 @@
-import { getCurrentCollector } from '../../review/comment-collector.js';
+import { getCollector } from '../comment-collector.js';
 
 export interface LeaveInlineCommentArgs {
   message: string;
@@ -18,8 +18,12 @@ export async function leaveInlineComment(
 
     console.log('📝 Collecting inline comment for later review:', { path, line });
     
-    const collector = getCurrentCollector();
-    collector.addInlineComment(path, line, message);
+    const collector = getCollector();
+    if (collector) {
+      collector.addInlineComment(path, line, message);
+    } else {
+      console.log('⚠️ No collector available, comment will be skipped');
+    }
     
     return {
       success: true

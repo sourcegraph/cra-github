@@ -2,7 +2,6 @@ import { getConfig } from "../config.js";
 import { reviewDiff } from "../review/reviewer.js";
 import { GitHubClient } from "./client.js";
 import { CHECK_STATUS, CHECK_CONCLUSION, PRDetails, GitHubPullRequestEvent } from "./types.js";
-import { startReviewSession, endReviewSession } from "../review/comment-collector.js";
 
 export async function processReview(
     jobId: string, 
@@ -62,36 +61,61 @@ export async function processReview(
 
       const prDetailsContent = `Repository: ${payload.repository.full_name}, PR Number: ${prDetails.pr_number}, Commit SHA: ${prDetails.commit_sha}, PR URL: ${prDetails.pr_url}`;
 
-      console.log(`Starting review session for job ${jobId}`);
-      startReviewSession();
-
       console.log(`Calling reviewDiff() for job ${jobId}`);
-      await reviewDiff(diffContent, prDetailsContent, installationId);
+      const reviewResult = await reviewDiff(diffContent, prDetailsContent, installationId);
       console.log(`Review completed for job ${jobId}`);
 
-      // Collect all comments from the review session
-      const collector = endReviewSession();
-      console.log(`Collected ${collector.getInlineComments().length} inline comments and ${collector.getGeneralComments().length} general comments`);
-
-      // Post aggregated review if there are any comments
-      if (collector.hasComments()) {
-        console.log('📋 Posting aggregated PR review...');
-        const reviewSummary = collector.getReviewSummary();
-        const inlineComments = collector.getInlineComments();
-        
-        await githubClient.createPRReview(
-          owner,
-          repo,
-          prNumber,
-          reviewSummary,
-          'COMMENT',
-          inlineComments.map(comment => ({
-            path: comment.path,
-            line: comment.line,
-            body: comment.body
-          }))
-        );
-        console.log('✅ PR review posted successfully');
+      // Read collected comments from file
+      const fs = await import('fs');
+      const commentsFilePath = reviewResult.commentsFilePath;
+      
+      if (fs.existsSync(commentsFilePath)) {
+        try {
+          console.log(`📖 Reading collected comments from ${commentsFilePath}`);
+          const fileContent = fs.readFileSync(commentsFilePath, 'utf8').trim();
+          
+          if (fileContent) {
+            const commentLines = fileContent.split('\n');
+            const comments = commentLines.map(line => JSON.parse(line));
+            
+            const inlineComments = comments.filter(c => c.type === 'inline');
+            const generalComments = comments.filter(c => c.type === 'general');
+            
+            console.log(`📝 Collected ${inlineComments.length} inline comments and ${generalComments.length} general comments`);
+            
+            // Create review summary from general comments
+            const reviewSummary = generalComments.length > 0 
+              ? generalComments.map(c => c.message).join('\n\n')
+              : 'Code review completed.';
+            
+            // Post aggregated review
+            console.log('📋 Posting aggregated PR review...');
+            await githubClient.createPRReview(
+              owner,
+              repo,
+              prNumber,
+              reviewSummary,
+              'COMMENT',
+              inlineComments.map(comment => ({
+                path: comment.path,
+                line: comment.line,
+                body: comment.message
+              }))
+            );
+            console.log('✅ PR review posted successfully');
+          } else {
+            console.log('📝 No comments collected, skipping review creation');
+          }
+          
+          // Clean up the comments file
+          fs.unlinkSync(commentsFilePath);
+          console.log('🗑️ Cleaned up comments file');
+          
+        } catch (error) {
+          console.error('❌ Failed to read or process comments file:', error);
+        }
+      } else {
+        console.log('📝 No comments file found, skipping review creation');
       }
 
       // Update check run with success (simplified since review details are now in PR review)
@@ -107,13 +131,6 @@ export async function processReview(
 
     } catch (error) {
       console.error(`Review job ${jobId} failed with exception:`, error);
-      
-      // End review session if it was started
-      try {
-        endReviewSession();
-      } catch {
-        console.log('No active review session to end');
-      }
       
       // Post FAILED check run for exceptions
       await postFailureCheckRun(githubClient, payload, error instanceof Error ? error.message : String(error));

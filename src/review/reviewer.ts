@@ -6,7 +6,11 @@ import { Config, getConfig } from "../config.js";
 import { newThread, execute } from "../amp.js";
 
 
-export const reviewDiff = async (diffContent: string, mrDetailsContent: string, installationId: number) => {
+export const reviewDiff = async (
+  diffContent: string, 
+  mrDetailsContent: string, 
+  installationId: number
+) => {
 
     // Get config
     const config: Config = getConfig();
@@ -42,10 +46,14 @@ export const reviewDiff = async (diffContent: string, mrDetailsContent: string, 
       // Write prompt to file
       writeFileSync(promptFilePath, promptContent, 'utf8');
 
-      // Write settings to file with installation ID
+      // Generate unique filename for comment collection
+      const commentsFileName = `comments-${installationId}-${uuidv4()}.jsonl`;
+      const commentsFilePath = join(tempDir, commentsFileName);
+
+      // Write settings to file with installation ID and comments file
       const settings = { ...ampConfig.settings };
       
-      // Ensure GitHub MCP server environment exists and set installation ID
+      // Ensure GitHub MCP server environment exists and set installation ID and comments file
       settings['amp.mcpServers'] = {
         ...settings['amp.mcpServers'],
         github: {
@@ -53,6 +61,7 @@ export const reviewDiff = async (diffContent: string, mrDetailsContent: string, 
           env: {
             ...settings['amp.mcpServers']?.github?.env,
             GITHUB_INSTALLATION_ID: installationId.toString(),
+            COMMENTS_FILE: commentsFilePath,
           }
         }
       };
@@ -70,7 +79,7 @@ export const reviewDiff = async (diffContent: string, mrDetailsContent: string, 
         threadId
       });
 
-      return { success: true, threadId, result };
+      return { success: true, threadId, result, commentsFilePath };
   } catch (error) {
     console.error(`Error starting thread: ${error}`);
     throw new Error(`Failed to start thread: ${error}`);
