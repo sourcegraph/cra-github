@@ -7,30 +7,11 @@ This directory contains the Model Context Protocol (MCP) server implementation f
 ### 1. `leave_general_comment`
 Leave general comments on pull requests.
 
-**Parameters:**
-- `message` (string, required): The comment message
-- `owner` (string, required): Repository owner
-- `repo` (string, required): Repository name
-- `pr_number` (number, required): Pull request number
-
 ### 2. `leave_inline_comment`
-Leave inline comments on specific lines in pull requests.
-
-**Parameters:**
-- `message` (string, required): The comment message
-- `owner` (string, required): Repository owner
-- `repo` (string, required): Repository name
-- `pr_number` (number, required): Pull request number
-- `path` (string, required): File path for the inline comment
-- `line` (number, required): Line number for the inline comment
+Leave inline comments on specific lines in pull requests. Supports optional `suggested_fix` parameter for code suggestions.
 
 ### 3. `get_pr_comments`
 Get all comments on a pull request.
-
-**Parameters:**
-- `owner` (string, required): Repository owner
-- `repo` (string, required): Repository name
-- `pr_number` (number, required): Pull request number
 
 ## Usage
 
@@ -39,25 +20,17 @@ Get all comments on a pull request.
 Run the standalone MCP server for direct stdio communication:
 
 ```bash
-npm run mcp
+pnpm run mcp
 ```
 
 Or build and run:
 ```bash
-npm run mcp:build
+pnpm run mcp:build
 ```
 
 ## Configuration
 
-The server uses the same configuration as the main application. Make sure your `config.yml` and environment variables are properly set:
-
-### Environment Variables
-- `GITHUB_APP_ID` - GitHub App ID
-- `GITHUB_APP_PRIVATE_KEY` or `GITHUB_APP_PRIVATE_KEY_PATH` - GitHub App private key
-- `GITHUB_BASE_URL` - GitHub API URL (default: https://api.github.com)
-
-### GitHub App Integration
-The MCP server works with GitHub App installations for authentication. When accessing repositories, it uses the GitHub App's installation tokens rather than personal access tokens.
+Uses the same configuration as the main application. Requires GitHub App credentials for authentication.
 
 ## Integration with AI Agents
 
@@ -80,24 +53,7 @@ amp:
 
 This allows Amp to automatically use the GitHub MCP tools during code reviews.
 
-### Example Usage in Prompts
-
-```
-You have access to GitHub tools. To review a pull request:
-
-1. Use get_pr_comments to see existing feedback
-2. Review the code changes  
-3. Use leave_inline_comment to add specific feedback
-4. Use leave_general_comment for overall observations
-
-Owner: octocat
-Repo: Hello-World
-PR Number: 123
-```
-
 ### Code Review Workflow
-
-The tools are designed to work together in a typical code review workflow:
 
 1. **Check Existing Feedback**: `get_pr_comments` to see what's already been discussed
 2. **Leave Feedback**: 

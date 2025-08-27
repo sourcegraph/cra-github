@@ -1,13 +1,12 @@
 github:
   base_url: "https://api.github.com"
   check_name: "Amp Code Review"
+  webhook_secret: "${GITHUB_WEBHOOK_SECRET}"
 
 queue:
   max_workers: 20
   max_queue_size: 100
   retry_after_seconds: 60
-
-
 
 server:
   port: "${PORT:-5053}"
