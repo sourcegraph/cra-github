@@ -12,7 +12,7 @@ const github = new Hono();
 const config: Config = getConfig();
 
 // PR actions that trigger code reviews
-const REVIEW_TRIGGER_ACTIONS = ['opened', 'reopened', 'ready_for_review'];
+const REVIEW_TRIGGER_ACTIONS = ['opened', 'reopened', 'ready_for_review', 'review_requested'];
 
 // We'll need to receive the reviewQueue from the main server
 let reviewQueue: ReviewJobQueue | null = null;
@@ -58,6 +58,16 @@ async function handlePullRequestEvent(payload: GitHubPullRequestEvent) {
     return { message: 'Action ignored' };
   }
 
+  // For review_requested actions, only respond if our bot was requested
+  if (action === 'review_requested') {
+    const requestedReviewer = (payload as any).requested_reviewer;
+    if (!requestedReviewer || requestedReviewer.type !== 'Bot') {
+      return { message: 'Review not requested for this bot' };
+    }
+    // You could add additional bot name checking here if needed
+    console.log('Re-review requested for bot:', requestedReviewer.login);
+  }
+
   console.log(`Processing PR ${payload.pull_request.number} action: ${action}`);
 
   // Extract installation ID directly from webhook payload
@@ -84,6 +94,76 @@ async function handlePullRequestEvent(payload: GitHubPullRequestEvent) {
     jobId,
     status: 'queued',
     message: 'Review job enqueued successfully'
+  };
+}
+
+/**
+ * Handle check run action events (e.g., re-run review button)
+ */
+async function handleCheckRunActionEvent(payload: any) {
+  console.log(`Processing check run action: ${payload.requested_action?.identifier}`);
+  
+  // Only handle our re-run review action
+  if (payload.requested_action?.identifier !== 're-run-review') {
+    return { message: 'Action not handled' };
+  }
+
+  // Extract installation and PR information
+  const installationId = payload.installation?.id;
+  const checkRun = payload.check_run;
+  const repository = payload.repository;
+
+  if (!installationId || !checkRun || !repository) {
+    throw new Error('Missing required check run action data');
+  }
+
+  console.log(`Re-run review requested for check run ${checkRun.id} in repo ${repository.full_name}`);
+
+  // We need to find the associated PR. The check run should have the PR info in pull_requests array
+  const pullRequests = checkRun.pull_requests || [];
+  
+  if (pullRequests.length === 0) {
+    throw new Error('No associated pull request found for check run');
+  }
+
+  // Use the first PR (there should typically be only one)
+  const prNumber = pullRequests[0].number;
+  
+  console.log(`Queueing re-review for PR ${prNumber}`);
+
+  if (!reviewQueue) {
+    throw new Error('Review queue not initialized');
+  }
+
+  // Create a mock payload for the re-run (we'll need to fetch PR details)
+  const processReviewCallback = async (jobId: string) => {
+    // We need to fetch the full PR data since we don't have it in the check run payload
+    const config = getConfig();
+    const { GitHubClient } = await import('../github/client.js');
+    const githubClient = GitHubClient.forInstallation(config, installationId);
+    
+    console.log(`Fetching PR ${prNumber} details for re-review job ${jobId}`);
+    const prData = await githubClient.getPRInfo(repository.owner.login, repository.name, prNumber);
+    
+    // Construct a mock GitHubPullRequestEvent payload
+    const mockPayload = {
+      action: 're-review',
+      number: prNumber,
+      pull_request: prData,
+      repository: repository,
+      installation: { id: installationId },
+      sender: { id: 0, login: 'system' } // Mock sender for re-review
+    } as unknown as GitHubPullRequestEvent;
+
+    await processReview(jobId, installationId, mockPayload);
+  };
+
+  const jobId = reviewQueue.enqueueReview(prNumber, installationId, processReviewCallback);
+
+  return {
+    jobId,
+    status: 'queued',
+    message: `Re-review job enqueued successfully for PR ${prNumber}`
   };
 }
 
@@ -121,6 +201,12 @@ github.post('/webhook', async (c) => {
     // Handle pull request events first (GitHub App webhooks include both installation and pull_request)
     if (payload.pull_request) {
       const result = await handlePullRequestEvent(payload as GitHubPullRequestEvent);
+      return c.json(result, 202);
+    }
+
+    // Handle check run action requests  
+    if (payload.action === 'requested_action' && payload.check_run) {
+      const result = await handleCheckRunActionEvent(payload);
       return c.json(result, 202);
     }
 
