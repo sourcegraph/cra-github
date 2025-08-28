@@ -60,20 +60,8 @@ class GitHubMCPServer {
                   type: 'string',
                   description: 'The comment message',
                 },
-                owner: {
-                  type: 'string',
-                  description: 'Repository owner',
-                },
-                repo: {
-                  type: 'string',
-                  description: 'Repository name',
-                },
-                pr_number: {
-                  type: 'number',
-                  description: 'Pull request number',
-                },
               },
-              required: ['message', 'owner', 'repo', 'pr_number'],
+              required: ['message'],
             },
           },
           {
@@ -85,18 +73,6 @@ class GitHubMCPServer {
                 message: {
                   type: 'string',
                   description: 'The comment message explaining the issue or feedback',
-                },
-                owner: {
-                  type: 'string',
-                  description: 'Repository owner',
-                },
-                repo: {
-                  type: 'string',
-                  description: 'Repository name',
-                },
-                pr_number: {
-                  type: 'number',
-                  description: 'Pull request number',
                 },
                 path: {
                   type: 'string',
@@ -111,7 +87,7 @@ class GitHubMCPServer {
                   description: 'Optional code suggestion to replace the current line(s). Only provide this for obvious/trivial fixes. The suggestion should be the exact replacement code without any markdown formatting.',
                 },
               },
-              required: ['message', 'owner', 'repo', 'pr_number', 'path', 'line'],
+              required: ['message', 'path', 'line'],
             },
           },
           {

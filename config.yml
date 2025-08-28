@@ -78,14 +78,14 @@ amp:
       instructions:
         - "Use this tool to leave a general review comment on the pull request"
         - "This will post your comment as the top level comment on a review"
-        - "Required: message, owner, repo, pr_number"
+        - "Required: message"
         - "Example: 'The changes look good, but there are a few issues that need to be addressed'"
     - name: leave_inline_comment
       description: Leave inline comments on specific lines in pull requests
       instructions:
         - "Use this tool to leave comments on specific lines of code"
         - "This will post your comment directly on the line in the diff view via PR review"
-        - "Required: message, owner, repo, pr_number, path, line"
+        - "Required: message, path, line"
         - "Optional: suggested_fix - provide exact replacement code for obvious/trivial fixes only"
         - "For suggested_fix: only include the raw code replacement, no markdown formatting or explanations"
         - "Use suggested_fix for simple fixes like typos, missing semicolons, variable name corrections, etc."
