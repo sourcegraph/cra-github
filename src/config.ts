@@ -19,6 +19,9 @@ const ConfigSchema = z.object({
     max_queue_size: z.coerce.number(),
     retry_after_seconds: z.coerce.number(),
   }),
+  reviewer: z.object({
+    ignore: z.array(z.string()),
+  }).optional(),
 
   server: z.object({
     port: z.string(),

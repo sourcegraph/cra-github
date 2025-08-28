@@ -41,12 +41,23 @@ export async function processReview(
 
     // Get diff content from GitHub API
     console.log('Fetching diff content from GitHub API...');
-    const diffContent = await githubClient.getPRDiff(owner, repo, prNumber);
+    const diffContent = await githubClient.getFilteredPRDiff(owner, repo, prNumber);
 
     if (!diffContent) {
-      const error = 'No diff content found';
-      console.error(error);
-      throw new Error(error);
+      console.log('No diff content found, completing review without analysis');
+      
+      // Update check run with success since there's nothing to review
+      await githubClient.updateCheckRun(owner, repo, checkRun.id, {
+        status: CHECK_STATUS.COMPLETED,
+        conclusion: CHECK_CONCLUSION.SUCCESS,
+        output: {
+          title: 'Code Review Completed',
+          summary: 'No reviewable changes found based on configured file patterns.',
+        },
+        details_url: prUrl,
+      });
+      
+      return;
     }
 
     console.log(`Retrieved diff content (${diffContent.length} chars)`);
@@ -59,7 +70,7 @@ export async function processReview(
       pr_url: prUrl,
     };
 
-    const prDetailsContent = `Repository: ${payload.repository.full_name}, PR Number: ${prDetails.pr_number}, Commit SHA: ${prDetails.commit_sha}, PR URL: ${prDetails.pr_url}`;
+    const prDetailsContent = `Repository: ${payload.repository.full_name},\nPR Number: ${prDetails.pr_number}\nCommit SHA: ${prDetails.commit_sha}\nPR URL: ${prDetails.pr_url}`;
 
     console.log(`Calling reviewDiff() for job ${jobId}`);
     const reviewResult = await reviewDiff(diffContent, prDetailsContent, installationId);
