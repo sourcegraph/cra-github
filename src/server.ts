@@ -96,7 +96,6 @@ const serverConfig = config.server;
 const port = Number(serverConfig.port) || 5053;
 
 console.log(`Starting GitHub Code Review Agent on port ${port}`);
-console.log(`Debug mode: ${serverConfig.debug}`);
 
 serve({
   fetch: app.fetch,

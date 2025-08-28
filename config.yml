@@ -31,7 +31,7 @@ amp:
         command: "sh"
         args:
           - "-c"
-          - "cd ${GITHUB_APP_CWD} && pnpm run mcp"
+          - "cd ${GITHUB_APP_CWD} && node dist/mcp/server.js 2>&1 | tee /tmp/mcp-server.log"
         env:
           GITHUB_APP_CWD: "${GITHUB_APP_CWD}"
           GITHUB_APP_ID: "${GITHUB_APP_ID}"

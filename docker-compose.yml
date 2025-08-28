@@ -1,0 +1,10 @@
+services:
+  cra:
+    build: .
+    env_file: .env
+    environment:
+      GITHUB_APP_CWD: /app  # Override .env value for container
+    ports:
+      - "5053:5053"
+    init: true
+    restart: unless-stopped

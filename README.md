@@ -13,25 +13,56 @@ A GitHub App for automated code reviews using Hono.js and Amp.
 
 ## Quick Start
 
+### Local Development
+
 1. **Clone and Install**
    ```bash
    cd cra-github
    pnpm install
    ```
 
-2. **Environment Setup**
+2. **Build (required for MCP server)**
+   ```bash
+   pnpm run build
+   ```
+
+3. **Environment Setup**
    ```bash
    cp .env.example .env
    ```
 
-3. **Start Development Server**
+4. **Start Development Server**
    ```bash
    pnpm run dev
    ```
 
-4. **Install the App**
-   - Visit `{APP_BASE_URL}/github/install` (e.g., `https://your-ngrok-url.app/github/install`)
-   - Follow the GitHub App installation flow
+### Docker Setup
+
+1. **Create GitHub App**
+   - Go to GitHub Settings > Developer settings > GitHub Apps > New GitHub App
+   - Set webhook URL to placeholder (e.g., `https://example.com/webhook`)
+   - Download private key, note App ID and webhook secret
+
+2. **Configure Environment**
+   ```bash
+   cp .env.example .env
+   # Fill in GitHub App credentials from step 1
+   # For Docker, use GITHUB_APP_PRIVATE_KEY (base64) instead of file path:
+   # cat private-key.pem | base64 -w 0
+   ```
+
+3. **Start Container**
+   ```bash
+   docker compose up --build
+   # or with Podman: podman-compose up --build
+   ```
+
+4. **Update Webhook URL**
+   - For local dev: start ngrok (`ngrok http 5053`)
+   - Update GitHub App webhook URL to `https://your-url/github/webhook`
+
+5. **Install the App**
+   - Visit `http://localhost:5053/github/install`
    - Select repositories to enable code reviews
 
 ## Configuration
