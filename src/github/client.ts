@@ -1,4 +1,5 @@
 import fetch from 'node-fetch';
+import { minimatch } from 'minimatch';
 import { Config } from '../config.js';
 import { getInstallationToken, invalidateTokenCache } from './auth.js';
 
@@ -283,6 +284,57 @@ export class GitHubClient {
     }
 
     return await response.json();
+  }
+
+  async getPRFiles(owner: string, repo: string, prNumber: number): Promise<any[]> {
+    const url = `${this.baseUrl}/repos/${owner}/${repo}/pulls/${prNumber}/files`;
+    
+    const response = await this.makeRequest(url, {
+      method: 'GET',
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`GitHub API error: ${response.status} ${response.statusText} - ${errorText}`);
+    }
+
+    return await response.json();
+  }
+
+  async getFilteredPRDiff(
+    owner: string, 
+    repo: string, 
+    prNumber: number, 
+    fileFilter?: (filename: string) => boolean
+  ): Promise<string> {
+    const files = await this.getPRFiles(owner, repo, prNumber);
+    
+    let filteredFiles = files;
+    
+    // Apply config-based ignore patterns
+    const ignorePatterns = this.config.reviewer?.ignore;
+    if (ignorePatterns && ignorePatterns.length > 0) {
+      filteredFiles = filteredFiles.filter(file => 
+        !ignorePatterns.some(pattern => minimatch(file.filename, pattern))
+      );
+    }
+    
+    // Apply custom filter if provided
+    if (fileFilter) {
+      filteredFiles = filteredFiles.filter(file => fileFilter(file.filename));
+    }
+    
+    // Combine patches from filtered files with proper diff headers
+    return filteredFiles.map(file => {
+      if (!file.patch) return '';
+      
+      // Add proper diff header if not present
+      const patch = file.patch;
+      if (!patch.startsWith('diff --git')) {
+        return `diff --git a/${file.filename} b/${file.filename}\nindex ${file.sha?.substring(0,7) || 'unknown'}..${file.sha?.substring(0,7) || 'unknown'} 100644\n--- a/${file.filename}\n+++ b/${file.filename}\n${patch}`;
+      }
+      return patch;
+    }).join('\n\n');
   }
 
   async getPRComments(owner: string, repo: string, prNumber: number): Promise<any[]> {

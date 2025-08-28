@@ -8,6 +8,15 @@ queue:
   max_queue_size: 100
   retry_after_seconds: 60
 
+reviewer:
+  ignore:
+    - "**/*.test.*"
+    - "**/*.spec.*"
+    - "**/node_modules/**"
+    - "**/*.d.ts"
+    - "**/dist/**"
+    - "**/build/**"
+
 server:
   port: "${PORT:-5053}"
   debug: "${DEBUG:-false}"
