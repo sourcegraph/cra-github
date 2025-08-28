@@ -49,7 +49,7 @@ export class GitHubClient {
           'Authorization': `Bearer ${token}`,
         };
       } catch (error) {
-        console.error('❌ Failed to get installation token:', error);
+        console.error('Failed to get installation token:', error);
         throw error;
       }
     } else {

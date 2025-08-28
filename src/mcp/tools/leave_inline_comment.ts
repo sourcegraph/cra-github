@@ -13,13 +13,13 @@ export async function leaveInlineComment(
   try {
     const { message, path, line, suggested_fix } = args;
 
-    console.log('📝 Collecting inline comment for later review:', { path, line, hasSuggestion: !!suggested_fix });
+    console.error('Collecting inline comment for later review:', { path, line, hasSuggestion: !!suggested_fix });
     
     const collector = getCollector();
     if (collector) {
       collector.addInlineComment(path, line, message, suggested_fix);
     } else {
-      console.log('⚠️ No collector available, comment will be skipped');
+      console.error('No collector available, comment will be skipped');
     }
     
     return {

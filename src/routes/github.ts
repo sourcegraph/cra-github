@@ -276,11 +276,11 @@ github.get('/callback', async (c) => {
         </style>
       </head>
       <body>
-        <h1 class="success">✅ Installation Complete!</h1>
+        <h1 class="success">Installation Complete!</h1>
         <p>Your GitHub Code Review Agent is now installed!</p>
         
         <div class="info">
-          <h3>✨ What happens next:</h3>
+          <h3>What happens next:</h3>
           <ul>
             <li><strong>Automatic setup:</strong> Webhooks are configured automatically</li>
             <li><strong>Create pull requests:</strong> The agent will review all new pull requests</li>

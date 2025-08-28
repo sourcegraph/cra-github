@@ -51,16 +51,16 @@ export function initializeCollector(): FileBasedCommentCollector | null {
   const commentsFile = process.env.COMMENTS_FILE;
 
   if (!commentsFile) {
-    console.log('📝 No COMMENTS_FILE environment variable, collector not initialized');
+    console.error('No COMMENTS_FILE environment variable, collector not initialized');
     return null;
   }
 
   try {
     globalCollector = new FileBasedCommentCollector(commentsFile);
-    console.log('📝 Comment collector initialized with file:', commentsFile);
+    console.error('Comment collector initialized with file:', commentsFile);
     return globalCollector;
   } catch (error) {
-    console.error('❌ Failed to initialize comment collector:', error);
+    console.error('Failed to initialize comment collector:', error);
     return null;
   }
 }

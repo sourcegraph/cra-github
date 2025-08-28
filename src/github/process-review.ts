@@ -82,7 +82,7 @@ export async function processReview(
 
     if (fs.existsSync(commentsFilePath)) {
       try {
-        console.log(`📖 Reading collected comments from ${commentsFilePath}`);
+        console.log(`Reading collected comments from ${commentsFilePath}`);
         const fileContent = fs.readFileSync(commentsFilePath, 'utf8').trim();
 
         if (fileContent) {
@@ -94,7 +94,7 @@ export async function processReview(
 
           // TODO(sayans): GitHub API allows <= 30 comments per review, so we need to add splitting logic if there are > 30 comments
 
-          console.log(`📝 Collected ${inlineComments.length} inline comments and ${generalComments.length} general comments`);
+          console.log(`Collected ${inlineComments.length} inline comments and ${generalComments.length} general comments`);
 
           // Create review summary from general comments
           let reviewSummary = generalComments.length > 0
@@ -108,7 +108,7 @@ export async function processReview(
           }
 
           // Post aggregated review
-          console.log('📋 Posting aggregated PR review...');
+          console.log('Posting aggregated PR review...');
           await githubClient.createPRReview(
             owner,
             repo,
@@ -123,20 +123,20 @@ export async function processReview(
                 : comment.message
             }))
           );
-          console.log('✅ PR review posted successfully');
+          console.log('PR review posted successfully');
         } else {
-          console.log('📝 No comments collected, skipping review creation');
+          console.log('No comments collected, skipping review creation');
         }
 
         // Clean up the comments file
         fs.unlinkSync(commentsFilePath);
-        console.log('🗑️ Cleaned up comments file');
+        console.log('Cleaned up comments file');
 
       } catch (error) {
-        console.error('❌ Failed to read or process comments file:', error);
+        console.error('Failed to read or process comments file:', error);
       }
     } else {
-      console.log('📝 No comments file found, skipping review creation');
+      console.log('No comments file found, skipping review creation');
     }
 
     // Update check run with success (simplified since review details are now in PR review)

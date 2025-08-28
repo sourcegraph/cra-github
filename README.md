@@ -11,6 +11,8 @@ A GitHub App for automated code reviews using Hono.js and Amp.
 - **Check Runs**: Integration with GitHub's check runs API for status reporting
 - **MCP Server**: Model Context Protocol server for AI agent integration
 
+**Requirements**: Amp account with API key required for code reviews.
+
 ## Quick Start
 
 ### Local Development
@@ -75,6 +77,7 @@ A GitHub App for automated code reviews using Hono.js and Amp.
    - Repository: Checks (Write)
    - Repository: Contents (Read)
    - Repository: Metadata (Read)
+   - Repository: Webhooks (Write)
 3. **Configure webhook settings:**
    - Webhook URL: `https://your-domain.com/github/webhook` (use your APP_BASE_URL)
    - Subscribe to: Pull request events and Installation events
@@ -94,13 +97,15 @@ The GitHub App requires a private key for authentication. You have two options:
 3. Set `GITHUB_APP_PRIVATE_KEY_PATH=./private-key.pem`
 4. Add `*.pem` to your `.gitignore` to avoid committing the key
 
-#### Option 2: Environment Variable (Recommended for production)
+#### Option 2: Environment Variable (Recommended for production/Docker)
 1. Convert your private key to base64:
    ```bash
    cat private-key.pem | base64 -w 0
    ```
 2. Set the result as `GITHUB_APP_PRIVATE_KEY` in your environment
 3. The application will automatically decode and format the key
+
+**Note**: Docker setup requires the base64 encoded key in `.env` - private key files are not accessible in containers.
 
 ### Configuration File (config.yml)
 

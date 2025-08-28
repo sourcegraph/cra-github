@@ -10,13 +10,13 @@ export async function leaveGeneralComment(
   try {
     const { message } = args;
 
-    console.log('📝 Collecting general comment for later review');
+    console.error('Collecting general comment for later review');
     
     const collector = getCollector();
     if (collector) {
       collector.addGeneralComment(message);
     } else {
-      console.log('⚠️ No collector available, comment will be skipped');
+      console.error('No collector available, comment will be skipped');
     }
     
     return {

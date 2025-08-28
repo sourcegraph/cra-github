@@ -44,7 +44,7 @@ amp:
     amp.mcpServers:
       github:
         command: "sh"
-        args: ["-c", "cd ${GITHUB_APP_CWD} && pnpm run mcp"]
+        args: ["-c", "cd ${GITHUB_APP_CWD} && node dist/mcp/server.js"]
         env:
           GITHUB_APP_CWD: "${GITHUB_APP_CWD}"
           GITHUB_APP_ID: "${GITHUB_APP_ID}"
