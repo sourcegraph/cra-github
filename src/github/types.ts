@@ -5,6 +5,16 @@ export interface PRDetails {
   pr_url: string;
 }
 
+export interface PRContext {
+  owner: string;
+  repo: string;
+  pr_number: number;
+  repository_id: number;
+  commit_sha: string;
+  pr_url: string;
+  repository_full_name: string;
+}
+
 export interface GitHubPullRequestEvent {
   action: string;
   number: number;

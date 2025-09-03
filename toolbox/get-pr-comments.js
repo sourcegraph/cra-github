@@ -15,11 +15,7 @@ if (action === 'describe') {
   console.log(JSON.stringify({
     name: 'get_pr_comments',
     description: 'Get all comments on a pull request',
-    args: {
-      owner: ['string', 'Repository owner'],
-      repo: ['string', 'Repository name'],
-      pr_number: ['number', 'Pull request number']
-    }
+    args: {}
   }));
   process.exit(0);
 }
@@ -28,11 +24,13 @@ if (action === 'describe') {
 if (action === 'execute') {
   (async () => {
     try {
-      const args = JSON.parse(fs.readFileSync(0, 'utf8'));
+      // Get PR context from environment variables
+      const owner = process.env.GITHUB_OWNER;
+      const repo = process.env.GITHUB_REPO;
+      const prNumber = parseInt(process.env.GITHUB_PR_NUMBER || '0');
       
-      // Validate required args
-      if (!args.owner || !args.repo || typeof args.pr_number !== 'number') {
-        throw new Error('Missing required arguments: owner, repo, pr_number');
+      if (!owner || !repo || !prNumber) {
+        throw new Error('Missing required environment variables: GITHUB_OWNER, GITHUB_REPO, GITHUB_PR_NUMBER');
       }
 
       // Runtime deps from compiled output
@@ -42,7 +40,7 @@ if (action === 'execute') {
       const config = getConfig();
       const gh = GitHubClient.fromEnv(config);
 
-      const comments = await gh.getPRComments(args.owner, args.repo, args.pr_number);
+      const comments = await gh.getPRComments(owner, repo, prNumber);
 
       console.log(JSON.stringify({
         success: true,

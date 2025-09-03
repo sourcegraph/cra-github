@@ -4,11 +4,12 @@ import { join } from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { Config, getConfig } from "../config.js";
 import { newThread, execute } from "../amp.js";
+import { PRContext } from "../github/types.js";
 
 
 export const reviewDiff = async (
   diffContent: string, 
-  prDetailsContent: string, 
+  prContext: PRContext, 
   installationId: number
 ) => {
 
@@ -24,6 +25,9 @@ export const reviewDiff = async (
   try {      
       // Create prompt content
       const ampConfig = config.amp;
+      
+      // Format PR context for prompt
+      const prDetailsContent = `Repository: ${prContext.repository_full_name}\nPR Number: ${prContext.pr_number}\nCommit SHA: ${prContext.commit_sha}\nPR URL: ${prContext.pr_url}`;
       
       const promptContent = ampConfig.prompt_template
         .replace(/__PR_DETAILS_CONTENT__/g, prDetailsContent)
@@ -57,6 +61,9 @@ export const reviewDiff = async (
         env: {
           GITHUB_INSTALLATION_ID: installationId.toString(),
           COMMENTS_FILE: commentsFilePath,
+          GITHUB_OWNER: prContext.owner,
+          GITHUB_REPO: prContext.repo,
+          GITHUB_PR_NUMBER: prContext.pr_number.toString(),
           GITHUB_APP_ID: process.env.GITHUB_APP_ID || '',
           GITHUB_APP_PRIVATE_KEY_PATH: process.env.GITHUB_APP_PRIVATE_KEY_PATH || '',
           GITHUB_APP_CWD: process.env.GITHUB_APP_CWD || '',

@@ -1,7 +1,7 @@
 import { getConfig } from "../config.js";
 import { reviewDiff } from "../review/reviewer.js";
 import { GitHubClient } from "./client.js";
-import { CHECK_STATUS, CHECK_CONCLUSION, PRDetails, GitHubPullRequestEvent } from "./types.js";
+import { CHECK_STATUS, CHECK_CONCLUSION, PRContext, GitHubPullRequestEvent } from "./types.js";
 
 export async function processReview(
   jobId: string,
@@ -62,18 +62,19 @@ export async function processReview(
 
     console.log(`Retrieved diff content (${diffContent.length} chars)`);
 
-    // Create PR details object
-    const prDetails: PRDetails = {
+    // Create structured PR context object
+    const prContext: PRContext = {
+      owner,
+      repo,
       pr_number: prNumber,
       repository_id: repositoryId,
       commit_sha: commitSha,
       pr_url: prUrl,
+      repository_full_name: payload.repository.full_name,
     };
 
-    const prDetailsContent = `Repository: ${payload.repository.full_name},\nPR Number: ${prDetails.pr_number}\nCommit SHA: ${prDetails.commit_sha}\nPR URL: ${prDetails.pr_url}`;
-
     console.log(`Calling reviewDiff() for job ${jobId}`);
-    const reviewResult = await reviewDiff(diffContent, prDetailsContent, installationId);
+    const reviewResult = await reviewDiff(diffContent, prContext, installationId);
     console.log(`Review completed for job ${jobId}`);
 
     // Read collected comments from file
