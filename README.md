@@ -9,7 +9,7 @@ A GitHub App for automated code reviews using Hono.js and Amp.
 - **Queue Management**: Efficient job queuing and processing
 - **Code Review**: AI-powered code analysis and feedback
 - **Check Runs**: Integration with GitHub's check runs API for status reporting
-- **MCP Server**: Model Context Protocol server for AI agent integration
+- **Toolbox Integration**: Simple executable tools for AI agent integration
 
 **Requirements**: Amp account with API key required for code reviews.
 
@@ -23,7 +23,7 @@ A GitHub App for automated code reviews using Hono.js and Amp.
    pnpm install
    ```
 
-2. **Build (required for MCP server)**
+2. **Build (required for toolbox)**
    ```bash
    pnpm run build
    ```
@@ -162,20 +162,14 @@ pnpm run type-check
 pnpm run lint
 ```
 
-### MCP Server
-Run the standalone MCP server:
-```bash
-pnpm run mcp
-```
+### Toolbox
 
-Or build and run:
-```bash
-pnpm run mcp:build
-```
+The app uses Amp's toolbox feature to provide GitHub operations as simple executable tools. Tools are located in `toolbox/` and copied to `dist/toolbox/` during build.
 
-## MCP Integration
-
-The app includes a Model Context Protocol (MCP) server that exposes GitHub operations as tools for Amp Agent. See [`src/mcp/README.md`](src/mcp/README.md) for details.
+Available tools:
+- `leave_inline_comment` - Leave line-specific code feedback
+- `leave_general_comment` - Leave overall PR feedback  
+- `get_pr_comments` - Retrieve existing PR comments
 
 ## Architecture
 
@@ -184,7 +178,7 @@ The app includes a Model Context Protocol (MCP) server that exposes GitHub opera
 - **GitHub Apps**: Secure app installation and JWT authentication
 - **Job Queue**: Background processing for code reviews
 - **Amp**: AI-powered code analysis engine
-- **MCP Server**: Model Context Protocol server for AI agent integration
+- **Toolbox**: Simple executable tools for AI agent integration
 
 ## License
 

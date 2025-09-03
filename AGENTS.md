@@ -6,12 +6,11 @@
 - **Type check**: `pnpm run type-check` (tsc --noEmit)
 - **Test**: `pnpm run test` (Vitest)
 - **Dev**: `pnpm run dev` (tsx watch src/server.ts)
-- **MCP Server**: `pnpm run mcp` or `pnpm run mcp:build`
 
 ## Architecture
 - **GitHub Code Review Agent** using Hono.js framework
 - **Main components**: GitHub webhook processing, review queue, AI-powered code analysis
-- **Key directories**: src/github/ (auth, webhooks), src/review/ (queue, reviewer), src/mcp/ (Model Context Protocol)
+- **Key directories**: src/github/ (auth, webhooks), src/review/ (queue, reviewer), toolbox/ (Amp toolbox scripts)
 - **External integrations**: GitHub App API, Amp for AI reviews
 - **Configuration**: config.yml with environment variable interpolation
 
