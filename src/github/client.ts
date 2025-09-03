@@ -181,26 +181,6 @@ export class GitHubClient {
     return await response.json();
   }
 
-  async createPRComment(
-    owner: string,
-    repo: string,
-    prNumber: number,
-    body: string
-  ): Promise<any> {
-    const url = `${this.baseUrl}/repos/${owner}/${repo}/issues/${prNumber}/comments`;
-    
-    const response = await this.makeRequest(url, {
-      method: 'POST',
-      body: JSON.stringify({ body }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`GitHub API error: ${response.status} ${response.statusText} - ${errorText}`);
-    }
-
-    return await response.json();
-  }
 
   async createPRReview(
     owner: string,
@@ -238,23 +218,6 @@ export class GitHubClient {
     return await response.json();
   }
 
-  async getPRDiff(owner: string, repo: string, prNumber: number): Promise<string> {
-    const url = `${this.baseUrl}/repos/${owner}/${repo}/pulls/${prNumber}`;
-    
-    const response = await this.makeRequest(url, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/vnd.github.v3.diff',
-      },
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`GitHub API error: ${response.status} ${response.statusText} - ${errorText}`);
-    }
-
-    return await response.text();
-  }
 
   async getPRInfo(owner: string, repo: string, prNumber: number): Promise<any> {
     const url = `${this.baseUrl}/repos/${owner}/${repo}/pulls/${prNumber}`;
@@ -271,20 +234,6 @@ export class GitHubClient {
     return await response.json();
   }
 
-  async getRepositoryInfo(owner: string, repo: string): Promise<any> {
-    const url = `${this.baseUrl}/repos/${owner}/${repo}`;
-    
-    const response = await this.makeRequest(url, {
-      method: 'GET',
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`GitHub API error: ${response.status} ${response.statusText} - ${errorText}`);
-    }
-
-    return await response.json();
-  }
 
   async getPRFiles(owner: string, repo: string, prNumber: number): Promise<any[]> {
     const url = `${this.baseUrl}/repos/${owner}/${repo}/pulls/${prNumber}/files`;
