@@ -36,6 +36,17 @@ export class GitHubClient {
     return new GitHubClient(config);
   }
 
+  static forToken(config: Config, token: string): GitHubClient {
+    const configWithToken = {
+      ...config,
+      github: {
+        ...config.github,
+        token
+      }
+    };
+    return new GitHubClient(configWithToken);
+  }
+
   private async getAuthHeaders(): Promise<Record<string, string>> {
     const headers = {
       'Accept': 'application/vnd.github.v3+json',

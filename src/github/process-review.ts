@@ -9,7 +9,12 @@ export async function processReview(
   payload: GitHubPullRequestEvent
 ): Promise<void> {
   const config = await getConfig();
-  const githubClient = GitHubClient.forInstallation(config, installationId);
+  
+  // Use GITHUB_TOKEN from Actions environment if available, otherwise use GitHub App
+  const githubToken = process.env.GITHUB_TOKEN;
+  const githubClient = githubToken 
+    ? GitHubClient.forToken(config, githubToken)
+    : GitHubClient.forInstallation(config, installationId);
 
   try {
     // Extract PR information

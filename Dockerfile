@@ -32,4 +32,9 @@ COPY config.yml ./
 
 EXPOSE 5053
 
+# Ensure container runs from /app regardless of external --workdir overrides
+ENTRYPOINT ["sh", "-c", "cd /app && exec \"$@\"", "--"]
+
+# Default: start webhook server for Docker deployments  
+# Note: GitHub Actions overrides this CMD with review-action.js
 CMD ["node", "dist/server.js"]

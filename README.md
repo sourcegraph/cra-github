@@ -15,6 +15,37 @@ A GitHub App for automated code reviews using Hono.js and Amp.
 
 ## Quick Start
 
+### GitHub Actions (Recommended)
+
+The simplest way to add code reviews to any repository:
+
+1. **Copy the workflow file** to your repo:
+   ```bash
+   mkdir -p .github/workflows
+   # Copy review.yml from this repo to .github/workflows/
+   ```
+
+2. **Configure repository settings**:
+   - Go to your repo → Settings → Secrets and variables → Actions
+   - Add **Variable**: `AMP_SERVER_URL` = `https://ampcode.com`
+   - Add **Secret**: `AMP_API_KEY` = your Amp API key
+
+3. **Create a pull request** - reviews will run automatically!
+
+### Docker Image (For Actions)
+
+To build and publish the Docker image:
+
+```bash
+# Build for GitHub Actions (linux/amd64)
+podman build --platform linux/amd64 -t ghcr.io/your-username/cra-github:latest .
+
+# Push to GitHub Container Registry  
+podman push ghcr.io/your-username/cra-github:latest
+```
+
+Update the workflow file to use your image: `docker://ghcr.io/your-username/cra-github:latest`
+
 ### Local Development
 
 1. **Clone and Install**
