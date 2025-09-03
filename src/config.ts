@@ -32,18 +32,8 @@ const ConfigSchema = z.object({
     server_url: z.string(),
     settings: z.object({
       'amp.url': z.string(),
-      'amp.mcpServers': z.record(z.object({
-        command: z.string(),
-        args: z.array(z.string()).optional(),
-        env: z.record(z.string()).optional(),
-      })),
     }),
     prompt_template: z.string(),
-    tools: z.array(z.object({
-      name: z.string(),
-      description: z.string(),
-      instructions: z.array(z.string()),
-    })),
   }),
 });
 

@@ -25,23 +25,11 @@ export const reviewDiff = async (
       // Create prompt content
       const ampConfig = config.amp;
       
-      let promptContent = ampConfig.prompt_template
+      const promptContent = ampConfig.prompt_template
         .replace(/__PR_DETAILS_CONTENT__/g, prDetailsContent)
         .replace(/__DIFF_CONTENT__/g, diffContent);
 
-      // Add tools content
-      let toolsContent = '<tools>';
-      toolsContent += ampConfig.tools.map(tool => {
-        return `
-        <tool>
-            <title>${tool.name}</title>
-            <description>${tool.description}</description>
-            <instructions>${tool.instructions.join('\n')}</instructions>
-        </tool>
-    `;
-      }).join('');
-      toolsContent += '</tools>';
-      promptContent = promptContent.replace(/__TOOL_CONTENT__/g, toolsContent);
+      // Tools are now auto-discovered by Amp via toolbox - no manual injection needed
 
       // Write prompt to file
       writeFileSync(promptFilePath, promptContent, 'utf8');
@@ -50,20 +38,9 @@ export const reviewDiff = async (
       const commentsFileName = `comments-${installationId}-${uuidv4()}.jsonl`;
       const commentsFilePath = join(tempDir, commentsFileName);
 
-      // Write settings to file with installation ID and comments file
-      const settings = { ...ampConfig.settings };
-      
-      // Ensure GitHub MCP server environment exists and set installation ID and comments file
-      settings['amp.mcpServers'] = {
-        ...settings['amp.mcpServers'],
-        github: {
-          ...settings['amp.mcpServers']?.github,
-          env: {
-            ...settings['amp.mcpServers']?.github?.env,
-            GITHUB_INSTALLATION_ID: installationId.toString(),
-            COMMENTS_FILE: commentsFilePath,
-          }
-        }
+      // Write settings to file
+      const settings = { 
+        ...ampConfig.settings
       };
       
       writeFileSync(settingsFilePath, JSON.stringify(settings, null, 2), 'utf8');
@@ -76,7 +53,14 @@ export const reviewDiff = async (
         folderPath: tempDir,
         debug: true,
         logging: true,
-        threadId
+        threadId,
+        env: {
+          GITHUB_INSTALLATION_ID: installationId.toString(),
+          COMMENTS_FILE: commentsFilePath,
+          GITHUB_APP_ID: process.env.GITHUB_APP_ID || '',
+          GITHUB_APP_PRIVATE_KEY_PATH: process.env.GITHUB_APP_PRIVATE_KEY_PATH || '',
+          GITHUB_APP_CWD: process.env.GITHUB_APP_CWD || '',
+        }
       });
 
       return { success: true, threadId, result, commentsFilePath };

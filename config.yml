@@ -26,16 +26,6 @@ amp:
   server_url: "${AMP_SERVER_URL}"
   settings:
     amp.url: "${AMP_SERVER_URL}"
-    amp.mcpServers:
-      github:
-        command: "sh"
-        args:
-          - "-c"
-          - "cd ${GITHUB_APP_CWD} && node dist/mcp/server.js 2>/tmp/mcp-server.log"
-        env:
-          GITHUB_APP_CWD: "${GITHUB_APP_CWD}"
-          GITHUB_APP_ID: "${GITHUB_APP_ID}"
-          GITHUB_APP_PRIVATE_KEY_PATH: "${GITHUB_APP_PRIVATE_KEY_PATH}"
 
   prompt_template: |
     Review this code diff as a senior developer. Look for bugs, clear logic errors, and code quality problems.
@@ -56,13 +46,12 @@ amp:
     Diff to review:
     __DIFF_CONTENT__
 
+    Use the tools available in the toolbox (prefixed with tb__) while performing your review. Read any existing PR comments before leaving new comments. 
+
     Review the diff content to identify issues. If you find any issues, leave specific inline comments for each issue found.
 
     Suggested fixes are optional snippets of code that can directly replace the full line the indicated issue is on for an inline comment.
     If there is no simple code suggestion you can provide to fix the issue succinctly, do not provide a suggested fix.
-
-    Tools available to complete the code review process:
-    __TOOL_CONTENT__
 
     After you have completed the code review process, leave a single general comment.
     This comment should NOT reiterate the issues already identified in inline comments. Instead, include:
@@ -71,31 +60,3 @@ amp:
     * (Optional) Any minor or vague considerations that were not obvious enough to be left as an inline comment-- don't repeat any inline comments.
 
     Keep your tone professional and concise when commenting. No emojis.
-
-  tools:
-    - name: leave_general_comment
-      description: Leave general review comments on pull requests
-      instructions:
-        - "Use this tool to leave a general review comment on the pull request"
-        - "This will post your comment as the top level comment on a review"
-        - "Required: message"
-        - "Example: 'The changes look good, but there are a few issues that need to be addressed'"
-    - name: leave_inline_comment
-      description: Leave inline comments on specific lines in pull requests
-      instructions:
-        - "Use this tool to leave comments on specific lines of code"
-        - "This will post your comment directly on the line in the diff view via PR review"
-        - "Required: message, path, line"
-        - "Optional: suggested_fix - provide exact replacement code for obvious/trivial fixes only"
-        - "For suggested_fix: only include the raw code replacement, no markdown formatting or explanations"
-        - "Use suggested_fix for simple fixes like typos, missing semicolons, variable name corrections, etc."
-        - "Do NOT use suggested_fix for complex changes, architectural decisions, or anything requiring explanation"
-        - "Example: Comment on line 25 of src/auth.js about missing error handling"
-        - "Example with fix: Comment on typo with suggested_fix: 'const userName = req.body.username;'"
-    - name: get_pr_comments
-      description: Get all comments on a pull request
-      instructions:
-        - "Use to retrieve existing comments on the pull request"
-        - "Required: owner, repo, pr_number"
-        - "Returns array of comments and total count"
-        - "Helpful to see what feedback has already been given before adding new comments"

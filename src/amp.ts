@@ -1,6 +1,7 @@
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { getConfig, Config } from "./config.js";
 
 const execAsync = promisify(exec);
@@ -20,6 +21,7 @@ export interface ExecuteCommandOptions {
     resultFilePath?: string;
     debug?: boolean;
     logging?: boolean;
+    env?: Record<string, string>;
 }
 
 export async function newThread(folderPath: string = tmpdir()): Promise<string> {
@@ -50,7 +52,8 @@ export async function execute(options: ExecuteCommandOptions = {}): Promise<stri
         resultFilePath,
         folderPath = tmpdir(),
         debug = false,
-        logging = false
+        logging = false,
+        env: customEnv = {}
     } = options;
 
     let { threadId } = options;
@@ -62,24 +65,26 @@ export async function execute(options: ExecuteCommandOptions = {}): Promise<stri
             threadId = await newThread(folderPath);
         }
 
-        // Get MCP servers configuration from config
-        const mcpServers = config.amp.settings['amp.mcpServers'];
-        const mcpConfigJson = JSON.stringify(mcpServers);
-        
         const includePrompt = prompt ? `echo "${prompt.replace(/\n/g, "\\n")}" | ` : '';
         const includePromptFile = promptFilePath ? `cat ${promptFilePath} | ` : '';
         const includeThread = threadId ? ` threads continue ${threadId}` : '';
         const includeDebug = debug ? ` --log-level debug ` : '';
-        // Use settings file when provided (contains dynamic values like installation ID)
         const includeSettings = settingsFilePath ? ` --settings-file ${settingsFilePath} ` : '';
-        const includeMcpConfig = !settingsFilePath && mcpServers ? ` --mcp-config '${mcpConfigJson}' ` : '';
         const includeResult = resultFilePath ? ` > ${resultFilePath}` : '';
             
         // Build the command string
-        const command = `${prompt ? includePrompt : includePromptFile}${config.amp.command}${includeThread}${includeDebug}${includeSettings}${includeMcpConfig}${includeResult}`;
+        const command = `${prompt ? includePrompt : includePromptFile}${config.amp.command}${includeThread}${includeDebug}${includeSettings}${includeResult}`;
         
+        // Set up toolbox environment variables  
+        const toolboxPath = join(process.cwd(), 'dist/toolbox');
+        const env = {
+            ...process.env,
+            AMP_TOOLBOX: toolboxPath,
+            ...customEnv
+        };
+
         // Execute command
-        const { stdout, stderr } = await execAsync(command, { cwd: folderPath });
+        const { stdout, stderr } = await execAsync(command, { cwd: folderPath, env });
         
         if (logging) {
             console.log(`[AMP] Command completed. stdout length: ${stdout.length}, stderr length: ${stderr.length}`);
