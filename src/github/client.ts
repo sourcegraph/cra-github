@@ -61,13 +61,15 @@ export class GitHubClient {
     }
   }
 
-  private async makeRequest(url: string, options: any): Promise<any> {
-    const headers = await this.getAuthHeaders();
-    
-    // Add Content-Type for requests with body
+  private addContentTypeHeader(headers: Record<string, string>, options: any): void {
     if (options.body) {
       headers['Content-Type'] = 'application/json';
     }
+  }
+
+  private async makeRequest(url: string, options: any): Promise<any> {
+    const headers = await this.getAuthHeaders();
+    this.addContentTypeHeader(headers, options);
     
     const response = await fetch(url, {
       ...options,
@@ -81,11 +83,7 @@ export class GitHubClient {
     if (response.status === 401 && this.installationId) {
       invalidateTokenCache(this.installationId);
       const retryHeaders = await this.getAuthHeaders();
-      
-      // Add Content-Type for requests with body
-      if (options.body) {
-        retryHeaders['Content-Type'] = 'application/json';
-      }
+      this.addContentTypeHeader(retryHeaders, options);
       
       const retryResponse = await fetch(url, {
         ...options,
@@ -98,6 +96,26 @@ export class GitHubClient {
     }
 
     return response;
+  }
+
+  private async handleResponse(response: Response, expectJson = true): Promise<any> {
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`GitHub API error: ${response.status} ${response.statusText} - ${errorText}`);
+    }
+    return expectJson ? await response.json() : await response.text();
+  }
+
+  private async checkResponseError(response: Response, context?: string): Promise<void> {
+    if (!response.ok) {
+      const errorText = await response.text();
+      const prefix = context ? `${context}: ` : 'GitHub API error: ';
+      throw new Error(`${prefix}${response.status} ${response.statusText} - ${errorText}`);
+    }
+  }
+
+  private buildRepoUrl(owner: string, repo: string, path = ''): string {
+    return `${this.baseUrl}/repos/${owner}/${repo}${path ? `/${path}` : ''}`;
   }
 
   async createCheckRun(
@@ -121,7 +139,7 @@ export class GitHubClient {
       }>;
     }
   ): Promise<any> {
-    const url = `${this.baseUrl}/repos/${owner}/${repo}/check-runs`;
+    const url = this.buildRepoUrl(owner, repo, 'check-runs');
     
     const payload = {
       name: options.name,
@@ -138,12 +156,7 @@ export class GitHubClient {
       body: JSON.stringify(payload),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`GitHub API error: ${response.status} ${response.statusText} - ${errorText}`);
-    }
-
-    return await response.json();
+    return await this.handleResponse(response);
   }
 
   async updateCheckRun(
@@ -166,19 +179,14 @@ export class GitHubClient {
       }>;
     }
   ): Promise<any> {
-    const url = `${this.baseUrl}/repos/${owner}/${repo}/check-runs/${checkRunId}`;
+    const url = this.buildRepoUrl(owner, repo, `check-runs/${checkRunId}`);
     
     const response = await this.makeRequest(url, {
       method: 'PATCH',
       body: JSON.stringify(options),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`GitHub API error: ${response.status} ${response.statusText} - ${errorText}`);
-    }
-
-    return await response.json();
+    return await this.handleResponse(response);
   }
 
 
@@ -194,7 +202,7 @@ export class GitHubClient {
       body: string;
     }>
   ): Promise<any> {
-    const url = `${this.baseUrl}/repos/${owner}/${repo}/pulls/${prNumber}/reviews`;
+    const url = this.buildRepoUrl(owner, repo, `pulls/${prNumber}/reviews`);
     
     const payload: any = {
       body,
@@ -210,44 +218,29 @@ export class GitHubClient {
       body: JSON.stringify(payload),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`GitHub API error: ${response.status} ${response.statusText} - ${errorText}`);
-    }
-
-    return await response.json();
+    return await this.handleResponse(response);
   }
 
 
   async getPRInfo(owner: string, repo: string, prNumber: number): Promise<any> {
-    const url = `${this.baseUrl}/repos/${owner}/${repo}/pulls/${prNumber}`;
+    const url = this.buildRepoUrl(owner, repo, `pulls/${prNumber}`);
     
     const response = await this.makeRequest(url, {
       method: 'GET',
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`GitHub API error: ${response.status} ${response.statusText} - ${errorText}`);
-    }
-
-    return await response.json();
+    return await this.handleResponse(response);
   }
 
 
   async getPRFiles(owner: string, repo: string, prNumber: number): Promise<any[]> {
-    const url = `${this.baseUrl}/repos/${owner}/${repo}/pulls/${prNumber}/files`;
+    const url = this.buildRepoUrl(owner, repo, `pulls/${prNumber}/files`);
     
     const response = await this.makeRequest(url, {
       method: 'GET',
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`GitHub API error: ${response.status} ${response.statusText} - ${errorText}`);
-    }
-
-    return await response.json();
+    return await this.handleResponse(response);
   }
 
   async getFilteredPRDiff(
@@ -290,24 +283,17 @@ export class GitHubClient {
     // Fetch both issue comments (general discussion) and review comments (inline code comments)
     const [issueCommentsResponse, reviewCommentsResponse] = await Promise.all([
       // General PR discussion comments
-      this.makeRequest(`${this.baseUrl}/repos/${owner}/${repo}/issues/${prNumber}/comments`, {
+      this.makeRequest(this.buildRepoUrl(owner, repo, `issues/${prNumber}/comments`), {
         method: 'GET',
       }),
       // Inline code review comments  
-      this.makeRequest(`${this.baseUrl}/repos/${owner}/${repo}/pulls/${prNumber}/comments`, {
+      this.makeRequest(this.buildRepoUrl(owner, repo, `pulls/${prNumber}/comments`), {
         method: 'GET',
       })
     ]);
 
-    if (!issueCommentsResponse.ok) {
-      const errorText = await issueCommentsResponse.text();
-      throw new Error(`GitHub API error (issue comments): ${issueCommentsResponse.status} ${issueCommentsResponse.statusText} - ${errorText}`);
-    }
-
-    if (!reviewCommentsResponse.ok) {
-      const errorText = await reviewCommentsResponse.text();
-      throw new Error(`GitHub API error (review comments): ${reviewCommentsResponse.status} ${reviewCommentsResponse.statusText} - ${errorText}`);
-    }
+    await this.checkResponseError(issueCommentsResponse, 'GitHub API error (issue comments)');
+    await this.checkResponseError(reviewCommentsResponse, 'GitHub API error (review comments)');
 
     const issueComments = await issueCommentsResponse.json();
     const reviewComments = await reviewCommentsResponse.json();
