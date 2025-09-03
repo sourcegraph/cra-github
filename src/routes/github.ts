@@ -140,7 +140,7 @@ async function handleCheckRunActionEvent(payload: any) {
     // We need to fetch the full PR data since we don't have it in the check run payload
     const config = getConfig();
     const { GitHubClient } = await import('../github/client.js');
-    const githubClient = GitHubClient.forInstallation(config, installationId);
+    const githubClient = GitHubClient.create(config, { installationId });
     
     console.log(`Fetching PR ${prNumber} details for re-review job ${jobId}`);
     const prData = await githubClient.getPRInfo(repository.owner.login, repository.name, prNumber);

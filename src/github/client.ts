@@ -28,23 +28,24 @@ export class GitHubClient {
     this.baseUrl = (githubConfig.base_url ?? 'https://api.github.com').replace(/\/$/, '');
   }
 
-  static forInstallation(config: Config, installationId: number): GitHubClient {
-    return new GitHubClient(config, installationId);
-  }
-
-  static fromEnv(config: Config): GitHubClient {
+  static create(config: Config, options?: { installationId?: number; token?: string }): GitHubClient {
+    if (options?.token) {
+      const configWithToken = {
+        ...config,
+        github: {
+          ...config.github,
+          token: options.token
+        }
+      };
+      return new GitHubClient(configWithToken);
+    }
+    
+    if (options?.installationId) {
+      return new GitHubClient(config, options.installationId);
+    }
+    
+    // Auto-detect from environment (GITHUB_INSTALLATION_ID)
     return new GitHubClient(config);
-  }
-
-  static forToken(config: Config, token: string): GitHubClient {
-    const configWithToken = {
-      ...config,
-      github: {
-        ...config.github,
-        token
-      }
-    };
-    return new GitHubClient(configWithToken);
   }
 
   private async getAuthHeaders(): Promise<Record<string, string>> {

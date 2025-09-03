@@ -46,6 +46,12 @@ podman push ghcr.io/your-username/cra-github:latest
 
 Update the workflow file to use your image: `docker://ghcr.io/your-username/cra-github:latest`
 
+Example for the current `review.yml`:
+
+```bash
+podman build -t ghcr.io/sayansisodiya/cra-github:latest . && podman push ghcr.io/sayansisodiya/cra-github:latest
+```
+
 ### Local Development
 
 1. **Clone and Install**

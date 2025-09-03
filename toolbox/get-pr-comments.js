@@ -38,7 +38,7 @@ if (action === 'execute') {
       const { getConfig } = await distImport('config.js');
 
       const config = getConfig();
-      const gh = GitHubClient.fromEnv(config);
+      const gh = GitHubClient.create(config);
 
       const comments = await gh.getPRComments(owner, repo, prNumber);
 
