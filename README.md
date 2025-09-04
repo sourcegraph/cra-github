@@ -1,6 +1,6 @@
 # GitHub Code Review Agent
 
-A GitHub App for automated code reviews using Hono.js and Amp.
+Automated code reviews using Amp AI with two deployment options: **GitHub Actions** or **Webhook Service**.
 
 ## Features
 
@@ -13,9 +13,16 @@ A GitHub App for automated code reviews using Hono.js and Amp.
 
 **Requirements**: Amp account with API key required for code reviews.
 
+## Deployment Options
+
+| Option | Setup | Maintenance |
+|--------|-------|-------------|
+| **GitHub Actions** | Copy workflow file | None |
+| **Webhook Service** | GitHub App + hosting | Server management |
+
 ## Quick Start
 
-### GitHub Actions (Recommended)
+### Option 1: GitHub Actions (Recommended)
 
 The simplest way to add code reviews to any repository:
 
@@ -31,6 +38,14 @@ The simplest way to add code reviews to any repository:
    - Add **Secret**: `AMP_API_KEY` = your Amp API key
 
 3. **Create a pull request** - reviews will run automatically!
+
+<img src="gh_actions_gh_cra.png" alt="GitHub Actions Setup" width="400">
+
+### Option 2: Webhook Service (Advanced)
+
+For production use with full API access, queue management, and custom integrations.
+
+<img src="self_hosted_gh_cra.png" alt="Self-hosted Service" width="400">
 
 ### Docker Image (For Actions)
 
