@@ -1,15 +1,13 @@
 # GitHub Code Review Agent
 
-Automated code reviews using Amp AI with two deployment options: **GitHub Actions** or **Webhook Service**.
+Automated code reviews using [Amp](https://ampcode.com/) with two deployment options: **GitHub Actions** or **Webhook Service**.
 
 ## Features
 
-- **GitHub App Integration**: Secure GitHub App installation and authentication
-- **Webhook Processing**: Automatic pull request event handling
-- **Queue Management**: Efficient job queuing and processing
-- **Code Review**: AI-powered code analysis and feedback
-- **Check Runs**: Integration with GitHub's check runs API for status reporting
-- **Toolbox Integration**: Simple executable tools for AI agent integration
+- Reviews code for bugs, security issues, logic errors and more
+- Runs automatically on PR open; can manually trigger re-reviews
+- Can suggest fixes for identified issues
+- Aware of existing PR conversation
 
 **Requirements**: Amp account with API key required for code reviews.
 
@@ -41,9 +39,9 @@ The simplest way to add code reviews to any repository:
 
 <img src="gh_actions_gh_cra.png" alt="GitHub Actions Setup" width="400">
 
-### Option 2: Webhook Service (Advanced)
+### Option 2: Webhook Service
 
-For production use with full API access, queue management, and custom integrations.
+GitHub App + external service with full API access, queue management, and custom integrations.
 
 <img src="self_hosted_gh_cra.png" alt="Self-hosted Service" width="400">
 
