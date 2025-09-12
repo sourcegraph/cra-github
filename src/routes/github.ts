@@ -4,6 +4,7 @@ import { GitHubPullRequestEvent } from '../github/types.js';
 import { QueueFullError, ReviewJobQueue } from '../review/review-queue.js';
 import { Config, getConfig } from '../config.js';
 import { processReview } from '../github/process-review.js';
+import { processSlashCommand } from '../review/commands.js';
 import { z } from 'zod';
 
 const github = new Hono();
@@ -95,6 +96,46 @@ async function handlePullRequestEvent(payload: GitHubPullRequestEvent) {
     status: 'queued',
     message: 'Review job enqueued successfully'
   };
+}
+
+/**
+ * Handle issue comment events (PR comments with slash commands)
+ */
+async function handleIssueCommentEvent(payload: any) {
+  const action = payload.action;
+  
+  // Only handle created comments
+  if (action !== 'created') {
+    return { message: 'Comment action ignored' };
+  }
+
+  const comment = payload.comment;
+  const issue = payload.issue;
+  
+  // Only handle comments on pull requests
+  if (!issue.pull_request) {
+    return { message: 'Not a PR comment' };
+  }
+
+  const commentBody = comment.body?.trim();
+  if (!commentBody) {
+    return { message: 'Empty comment' };
+  }
+
+  // Check if comment starts with a slash command
+  if (!commentBody.startsWith('/')) {
+    return { message: 'Not a slash command' };
+  }
+
+  const parts = commentBody.split(' ');
+  const command = parts[0].substring(1); // Remove the '/'
+  const args = parts.slice(1).join(' '); // Everything after the command
+
+  console.log(`Processing slash command: /${command} with args: "${args}"`);
+
+  // Handle the command
+  const result = await processSlashCommand(command, args, payload);
+  return result;
 }
 
 /**
@@ -201,6 +242,12 @@ github.post('/webhook', async (c) => {
     // Handle pull request events first (GitHub App webhooks include both installation and pull_request)
     if (payload.pull_request) {
       const result = await handlePullRequestEvent(payload as GitHubPullRequestEvent);
+      return c.json(result, 202);
+    }
+
+    // Handle issue comment events (PR comments)
+    if (payload.comment && payload.issue) {
+      const result = await handleIssueCommentEvent(payload);
       return c.json(result, 202);
     }
 

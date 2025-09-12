@@ -319,4 +319,14 @@ export class GitHubClient {
     // Sort by creation date
     return allComments.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
   }
+
+  async createIssueComment(owner: string, repo: string, issueNumber: number, body: string): Promise<any> {
+    const response = await this.makeRequest(this.buildRepoUrl(owner, repo, `issues/${issueNumber}/comments`), {
+      method: 'POST',
+      body: JSON.stringify({ body })
+    });
+
+    await this.checkResponseError(response, 'GitHub API error (create comment)');
+    return await response.json();
+  }
 }
