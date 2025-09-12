@@ -6,6 +6,7 @@ import { Config, getConfig } from "../config.js";
 import { newThread, execute as ampExecute } from "../amp.js";
 import { PRContext } from "../github/types.js";
 import { execute } from "@sourcegraph/the-orb-is-awake";
+import { reviewDb } from "../database/index.js";
 
 
 export const reviewDiff = async (
@@ -78,7 +79,17 @@ export const reviewDiff = async (
         }
       }
 
-      return { success: true, threadId, commentsFilePath };
+      // Save review to database
+      const review = reviewDb.insertReview({
+        owner: prContext.owner,
+        repo: prContext.repo,
+        prNumber: prContext.pr_number.toString(),
+        threadId
+      });
+
+      console.log('Review saved to database:', review);
+
+      return { success: true, threadId, commentsFilePath, review };
   } catch (error) {
     console.error(`Error starting thread: ${error}`);
     throw new Error(`Failed to start thread: ${error}`);
