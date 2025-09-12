@@ -176,14 +176,14 @@ github.post('/webhook', async (c) => {
     const signature = c.req.header('X-Hub-Signature-256');
 
     // Verify webhook signature if secret is configured
-    if (config.github.webhook_secret) {
+    if (process.env.GITHUB_WEBHOOK_SECRET) {
       if (!signature) {
         return c.json({ error: 'Missing signature' }, 401);
       }
 
       const crypto = await import('crypto');
       const expectedSignature = 'sha256=' + crypto
-        .createHmac('sha256', config.github.webhook_secret)
+        .createHmac('sha256', process.env.GITHUB_WEBHOOK_SECRET)
         .update(body)
         .digest('hex');
 

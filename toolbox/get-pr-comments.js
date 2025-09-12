@@ -6,7 +6,7 @@ import { pathToFileURL } from 'url';
 
 // Resolve compiled code from project root → dist/
 const rootDir = path.resolve(process.cwd());
-const distImport = async (rel) => import(pathToFileURL(path.join(rootDir, 'dist', rel)).href);
+const distImport = async (rel) => import(pathToFileURL(path.join(import.meta.dirname, '..', rel)).href);
 
 const action = process.env.TOOLBOX_ACTION;
 
@@ -37,14 +37,33 @@ if (action === 'execute') {
       const { GitHubClient } = await distImport('github/client.js');
       const { getConfig } = await distImport('config.js');
 
-      const config = getConfig();
+      const configPath = path.join(import.meta.dirname, '..', 'config.yml');
+      const config = getConfig(configPath);
       const gh = GitHubClient.create(config);
 
       const comments = await gh.getPRComments(owner, repo, prNumber);
 
+      // Only pass the relevant fields for review
+      for (let i = 0; i < comments.length; i++) {
+        comments[i] = {
+          id: comments[i].id,
+          body: comments[i].body,
+          user: comments[i].user?.login,
+          created_at: comments[i].created_at,
+          updated_at: comments[i].updated_at,
+          path: comments[i].path,
+          position: comments[i].position,
+          line: comments[i].line,
+          start_line: comments[i].start_line,
+          side: comments[i].side,
+          diff_hunk: comments[i].diff_hunk,
+          commit_id: comments[i].commit_id
+        };
+      }
+
       console.log(JSON.stringify({
-        success: true,
         comments,
+        success: true,
         total_comments: comments.length
       }));
     } catch (error) {

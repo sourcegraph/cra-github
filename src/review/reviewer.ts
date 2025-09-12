@@ -1,10 +1,11 @@
-import { writeFileSync } from 'fs';
+import { writeFileSync, readFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { Config, getConfig } from "../config.js";
-import { newThread, execute } from "../amp.js";
+import { newThread, execute as ampExecute } from "../amp.js";
 import { PRContext } from "../github/types.js";
+import { execute } from "@sourcegraph/the-orb-is-awake";
 
 
 export const reviewDiff = async (
@@ -50,27 +51,34 @@ export const reviewDiff = async (
       writeFileSync(settingsFilePath, JSON.stringify(settings, null, 2), 'utf8');
 
       const threadId = await newThread(tempDir);
-      const result = await execute({
-        promptFilePath,
-        resultFilePath,
-        settingsFilePath,
-        folderPath: tempDir,
-        debug: true,
-        logging: true,
-        threadId,
-        env: {
-          GITHUB_INSTALLATION_ID: installationId.toString(),
-          COMMENTS_FILE: commentsFilePath,
-          GITHUB_OWNER: prContext.owner,
-          GITHUB_REPO: prContext.repo,
-          GITHUB_PR_NUMBER: prContext.pr_number.toString(),
-          GITHUB_APP_ID: process.env.GITHUB_APP_ID || '',
-          GITHUB_APP_PRIVATE_KEY_PATH: process.env.GITHUB_APP_PRIVATE_KEY_PATH || '',
-          GITHUB_APP_CWD: process.env.GITHUB_APP_CWD || '',
-        }
-      });
 
-      return { success: true, threadId, result, commentsFilePath };
+      // Run prompt with message streaming from SDK
+      for await (const message of execute({
+        prompt: readFileSync(promptFilePath, 'utf8'),
+        options: {
+          env: {
+            GITHUB_INSTALLATION_ID: installationId.toString(),
+            COMMENTS_FILE: commentsFilePath,
+            GITHUB_OWNER: prContext.owner,
+            GITHUB_REPO: prContext.repo,
+            GITHUB_PR_NUMBER: prContext.pr_number.toString(),
+            GITHUB_APP_ID: process.env.GITHUB_APP_ID || '',
+            GITHUB_APP_PRIVATE_KEY_PATH: process.env.GITHUB_APP_PRIVATE_KEY_PATH || '',
+            GITHUB_APP_CWD: process.env.GITHUB_APP_CWD || '',
+            AMP_TOOLBOX: process.env.AMP_TOOLBOX || '',
+          },
+          dangerouslyAllowAll: true,
+          continue: threadId,
+          cwd: tempDir,
+          settingsFile: settingsFilePath,
+        }
+      })) {        
+        if (message.type === 'result') {
+          console.log('Final result:', 'result' in message ? message.result : 'No result')
+        }
+      }
+
+      return { success: true, threadId, commentsFilePath };
   } catch (error) {
     console.error(`Error starting thread: ${error}`);
     throw new Error(`Failed to start thread: ${error}`);

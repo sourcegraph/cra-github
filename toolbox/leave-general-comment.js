@@ -34,7 +34,7 @@ if (action === 'describe') {
     const jsonLine = JSON.stringify(comment) + '\n';
     fs.appendFileSync(commentsFile, jsonLine, 'utf8');
     
-    console.error('Collecting general comment for later review');
+    console.log('Collecting general comment for later review');
     console.log(JSON.stringify({ success: true }));
   } catch (error) {
     console.error('Failed to collect general comment:', error.message);

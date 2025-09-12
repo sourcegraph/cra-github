@@ -29,8 +29,6 @@ setReviewQueue(reviewQueue);
 // Mount GitHub routes (including webhook)
 app.route('/github', github);
 
-
-
 // Routes
 app.get('/', (c) => {
   return c.json({

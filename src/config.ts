@@ -12,7 +12,6 @@ const ConfigSchema = z.object({
     base_url: z.string(),
     token: z.string().optional(),
     check_name: z.string(),
-    webhook_secret: z.string().optional(),
   }),
   queue: z.object({
     max_workers: z.coerce.number(),
@@ -44,16 +43,16 @@ class ConfigLoader {
   private static instance: ConfigLoader;
   private config: Config;
 
-  private constructor() {
-    const configFile = readFileSync('config.yml', 'utf8');
+  private constructor(configPath = 'config.yml') {
+    const configFile = readFileSync(configPath, 'utf8');
     const rawConfig = yaml.load(configFile);
     const processedConfig = this.processEnvVars(rawConfig);
     this.config = ConfigSchema.parse(processedConfig);
   }
 
-  static getInstance(): ConfigLoader {
+  static getInstance(configPath?: string): ConfigLoader {
     if (!ConfigLoader.instance) {
-      ConfigLoader.instance = new ConfigLoader();
+      ConfigLoader.instance = new ConfigLoader(configPath);
     }
     return ConfigLoader.instance;
   }
@@ -69,7 +68,6 @@ class ConfigLoader {
         if (value) {
           return value;
         } else {
-          console.warn(`Environment variable ${envVar} not found, keeping placeholder`);
           return `\${${envVar}}`;
         }
       });
@@ -88,4 +86,4 @@ class ConfigLoader {
   }
 }
 
-export const getConfig = () => ConfigLoader.getInstance().getConfig();
+export const getConfig = (configPath?: string) => ConfigLoader.getInstance(configPath).getConfig();

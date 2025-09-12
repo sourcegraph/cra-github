@@ -39,7 +39,10 @@ export async function generateAppToken(): Promise<string> {
     // Read from file
     const keyPath = process.env.GITHUB_APP_PRIVATE_KEY_PATH || 'private-key.pem';
     try {
-      privateKey = readFileSync(keyPath, 'utf8');
+      // Resolve relative paths from project root
+      const resolvedPath = keyPath.startsWith('/') ? keyPath : 
+        new URL(`../../${keyPath}`, import.meta.url).pathname;
+      privateKey = readFileSync(resolvedPath, 'utf8');
     } catch (error) {
       throw new Error(`Failed to read private key file at ${keyPath}: ${error}`);
     }

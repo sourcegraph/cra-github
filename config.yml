@@ -1,7 +1,6 @@
 github:
   base_url: "https://api.github.com"
   check_name: "Amp Code Review"
-  webhook_secret: "${GITHUB_WEBHOOK_SECRET}"
 
 queue:
   max_workers: 20

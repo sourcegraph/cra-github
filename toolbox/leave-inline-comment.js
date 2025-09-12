@@ -40,7 +40,7 @@ if (action === 'describe') {
     const jsonLine = JSON.stringify(comment) + '\n';
     fs.appendFileSync(commentsFile, jsonLine, 'utf8');
     
-    console.error(`Collecting inline comment for later review: ${args.path}:${args.line} hasSuggestion=${!!args.suggested_fix}`);
+    console.log(`Collecting inline comment for later review: ${args.path}:${args.line} hasSuggestion=${!!args.suggested_fix}`);
     console.log(JSON.stringify({ success: true }));
   } catch (error) {
     console.error('Failed to collect inline comment:', error.message);

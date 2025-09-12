@@ -11,6 +11,9 @@ importers:
       '@hono/node-server':
         specifier: ^1.13.7
         version: 1.19.0(hono@4.9.4)
+      '@sourcegraph/the-orb-is-awake':
+        specifier: ^0.1.0
+        version: 0.1.0
       dotenv:
         specifier: ^16.4.7
         version: 16.6.1
@@ -58,7 +61,7 @@ importers:
         specifier: ^9.15.0
         version: 9.34.0
       tsx:
-        specifier: ^4.19.2
+        specifier: ^4.20.5
         version: 4.20.5
       typescript:
         specifier: ^5.6.3
@@ -438,6 +441,82 @@ packages:
   '@jridgewell/sourcemap-codec@1.5.5':
     resolution: {integrity: sha512-cYQ9310grqxueWbl+WuIUIaiUaDcj7WOq5fVhEljNVgRfOUhY9fy2zTvfoqWsnebh8Sl70VScFbICvJnLKB0Og==}
 
+  '@napi-rs/keyring-darwin-arm64@1.1.9':
+    resolution: {integrity: sha512-/lVnrSFrut+8pQC6IcqlfHKzcEmf2XvQDOZPB5X4vI23GrNXBd56EuBlFPdTBtx46A8Bn+Aqi6pS8cnprHtcCw==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@napi-rs/keyring-darwin-x64@1.1.9':
+    resolution: {integrity: sha512-G3PiFZTAFTzUnpSB31A/UaPjl48/3sDTLmLxaAZBEk7HcOyBnL31gA1YqhDCO7F2y5sD5TWiFiuID9MyqYOcjw==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [darwin]
+
+  '@napi-rs/keyring-freebsd-x64@1.1.9':
+    resolution: {integrity: sha512-R4XbvRhEzQyOy4yM+SMDgk8BgkLPkIzXGwR6QR0wJ2YrPeBx3F2TrgdHfsIGSn/X5Axg/2UlrCiZVciZ5BmusA==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [freebsd]
+
+  '@napi-rs/keyring-linux-arm-gnueabihf@1.1.9':
+    resolution: {integrity: sha512-UrKy110I+zQyBtw4HLVUqZ1jDq11K3PmQIYgWAJNwB5VQOj4IQ63zLxk4V01Jx4bNOJmGNlvHDJUAyh/lC5Yww==}
+    engines: {node: '>= 10'}
+    cpu: [arm]
+    os: [linux]
+
+  '@napi-rs/keyring-linux-arm64-gnu@1.1.9':
+    resolution: {integrity: sha512-yOrhVpNGexDYzybe3dhmHQRPBDjlZPtJDE+eGSi1JwEqYlWDB+4IWjRsetxnO63DhnMFRLeMTdwWghsYrA7VwA==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@napi-rs/keyring-linux-arm64-musl@1.1.9':
+    resolution: {integrity: sha512-82EcuzoV/+Dxwi1HHhrEEprN5Ou7OsRKyTJSaRqiVuGvLaQDUhZX/4zXTTh4Pz24m22Q4aoJogafS31w8iKGGw==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@napi-rs/keyring-linux-riscv64-gnu@1.1.9':
+    resolution: {integrity: sha512-Q1ar7DszC1X8FW6w7Ql7b72GFeAUxkTiOuxXChCFBy7eWCQSDrr52ZLroIowp82RmkQLZebnK+IwSssD2Ntoag==}
+    engines: {node: '>= 10'}
+    cpu: [riscv64]
+    os: [linux]
+
+  '@napi-rs/keyring-linux-x64-gnu@1.1.9':
+    resolution: {integrity: sha512-LMvrYt1ho3pEDECssA7ATbcMDgayEUwwSD+UfrC7Hj1+C6dlvipwt5njwUDCno2OeXbjjisCo4CR9fDmXa4sZA==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+
+  '@napi-rs/keyring-linux-x64-musl@1.1.9':
+    resolution: {integrity: sha512-x2i/TgS2/fM+6LRj1MrtVC580sepz5GcxbSCXpttx2H58uZKBF0vVM9HDPHoKP2w5++fyrA17eltJNYN3Ob46A==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [linux]
+
+  '@napi-rs/keyring-win32-arm64-msvc@1.1.9':
+    resolution: {integrity: sha512-14t6p8CTBNfGzLO5LXqurT+pAOf/ocGjOM/qiG/LW+jPkhyJYBNI9e3HKq3QX+ObbnxVpt4fAY02b4XLt7EWig==}
+    engines: {node: '>= 10'}
+    cpu: [arm64]
+    os: [win32]
+
+  '@napi-rs/keyring-win32-ia32-msvc@1.1.9':
+    resolution: {integrity: sha512-7+7aXz5op6PtOnWYcK1GYXWQlk2zfpdPt9taLqmCCVpk1g4m3Gw1wyKyQxjrg9clHWdNhdWxhFEA0osDxG8/Eg==}
+    engines: {node: '>= 10'}
+    cpu: [ia32]
+    os: [win32]
+
+  '@napi-rs/keyring-win32-x64-msvc@1.1.9':
+    resolution: {integrity: sha512-P1wsSrSqDqvcXLL7yiH2RsO3De65wuEQj1ZjV9s1MHfEP5dIdriNYZfFsRBlOsl32GoK3qFzsuH5DTVviGEHSw==}
+    engines: {node: '>= 10'}
+    cpu: [x64]
+    os: [win32]
+
+  '@napi-rs/keyring@1.1.9':
+    resolution: {integrity: sha512-qjg04yaJ/gFqgG7wDqLlWBvZpsjvYDtwL+xOr2vSM2JrhojuIKsw7pH013U7xJOradTVGeQqhwqgZtt2IblgOw==}
+    engines: {node: '>= 10'}
+
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
     engines: {node: '>= 8'}
@@ -549,6 +628,15 @@ packages:
     resolution: {integrity: sha512-8a/caCUN4vkTChxkaIJcMtwIVcBhi4X2PQRoT+yCK3qRYaZ7cURrmJFL5Ux9H9RaMIXj9RuihckdmkBX3zZsgg==}
     cpu: [x64]
     os: [win32]
+
+  '@sourcegraph/amp@0.0.1757596358-g533dbf':
+    resolution: {integrity: sha512-qs88l6OfD7ebF1KodKhpamlhEOB2uOVyaOx/zt2QlDd1niQsqzCjabfLBgaJIz6yvRaB5Vn1LxDMU8FJixLEvA==}
+    engines: {node: '>=20'}
+    hasBin: true
+
+  '@sourcegraph/the-orb-is-awake@0.1.0':
+    resolution: {integrity: sha512-gCjfJbIME1ZqinUBybMGuFSM3NV5IvyLRvPE1bh2+DLIYQe6/BE/AooooW+FV6BPP8/R9qBpSKCLX2GK4tWB5A==}
+    engines: {node: '>=18'}
 
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
@@ -1499,6 +1587,57 @@ snapshots:
 
   '@jridgewell/sourcemap-codec@1.5.5': {}
 
+  '@napi-rs/keyring-darwin-arm64@1.1.9':
+    optional: true
+
+  '@napi-rs/keyring-darwin-x64@1.1.9':
+    optional: true
+
+  '@napi-rs/keyring-freebsd-x64@1.1.9':
+    optional: true
+
+  '@napi-rs/keyring-linux-arm-gnueabihf@1.1.9':
+    optional: true
+
+  '@napi-rs/keyring-linux-arm64-gnu@1.1.9':
+    optional: true
+
+  '@napi-rs/keyring-linux-arm64-musl@1.1.9':
+    optional: true
+
+  '@napi-rs/keyring-linux-riscv64-gnu@1.1.9':
+    optional: true
+
+  '@napi-rs/keyring-linux-x64-gnu@1.1.9':
+    optional: true
+
+  '@napi-rs/keyring-linux-x64-musl@1.1.9':
+    optional: true
+
+  '@napi-rs/keyring-win32-arm64-msvc@1.1.9':
+    optional: true
+
+  '@napi-rs/keyring-win32-ia32-msvc@1.1.9':
+    optional: true
+
+  '@napi-rs/keyring-win32-x64-msvc@1.1.9':
+    optional: true
+
+  '@napi-rs/keyring@1.1.9':
+    optionalDependencies:
+      '@napi-rs/keyring-darwin-arm64': 1.1.9
+      '@napi-rs/keyring-darwin-x64': 1.1.9
+      '@napi-rs/keyring-freebsd-x64': 1.1.9
+      '@napi-rs/keyring-linux-arm-gnueabihf': 1.1.9
+      '@napi-rs/keyring-linux-arm64-gnu': 1.1.9
+      '@napi-rs/keyring-linux-arm64-musl': 1.1.9
+      '@napi-rs/keyring-linux-riscv64-gnu': 1.1.9
+      '@napi-rs/keyring-linux-x64-gnu': 1.1.9
+      '@napi-rs/keyring-linux-x64-musl': 1.1.9
+      '@napi-rs/keyring-win32-arm64-msvc': 1.1.9
+      '@napi-rs/keyring-win32-ia32-msvc': 1.1.9
+      '@napi-rs/keyring-win32-x64-msvc': 1.1.9
+
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
       '@nodelib/fs.stat': 2.0.5
@@ -1570,6 +1709,14 @@ snapshots:
 
   '@rollup/rollup-win32-x64-msvc@4.48.1':
     optional: true
+
+  '@sourcegraph/amp@0.0.1757596358-g533dbf':
+    dependencies:
+      '@napi-rs/keyring': 1.1.9
+
+  '@sourcegraph/the-orb-is-awake@0.1.0':
+    dependencies:
+      '@sourcegraph/amp': 0.0.1757596358-g533dbf
 
   '@types/estree@1.0.8': {}
 
