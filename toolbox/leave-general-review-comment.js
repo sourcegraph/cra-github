@@ -6,7 +6,7 @@ const action = process.env.TOOLBOX_ACTION;
 
 if (action === 'describe') {
   console.log(JSON.stringify({
-    name: 'leave_general_comment',
+    name: 'leave_general_review_comment',
     description: 'Leave general comments on pull requests',
     args: {
       message: ['string', 'The comment message']

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import { execSync } from 'child_process';
-import { cpSync, existsSync, mkdirSync } from 'fs';
+import { cpSync, existsSync, mkdirSync, rmSync } from 'fs';
 import { join } from 'path';
 
 try {
@@ -14,6 +14,10 @@ try {
   const distToolbox = join(process.cwd(), 'dist/toolbox');
   
   if (existsSync(srcToolbox)) {
+    if (existsSync(distToolbox)) {
+      console.log('Removing existing toolbox folder...');
+      rmSync(distToolbox, { recursive: true, force: true });
+    }
     console.log('Copying toolbox folder...');
     cpSync(srcToolbox, distToolbox, { recursive: true, force: true });
     console.log('Toolbox copied successfully');

@@ -6,7 +6,7 @@ const action = process.env.TOOLBOX_ACTION;
 
 if (action === 'describe') {
   console.log(JSON.stringify({
-    name: 'leave_inline_comment',
+    name: 'leave_inline_review_comment',
     description: 'Leave inline comments on specific lines in pull requests. Can optionally include suggested fixes for trivial changes.',
     args: {
       message: ['string', 'The comment message explaining the issue or feedback'],

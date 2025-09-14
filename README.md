@@ -217,8 +217,8 @@ pnpm run lint
 The app uses Amp's toolbox feature to provide GitHub operations as simple executable tools. Tools are located in `toolbox/` and copied to `dist/toolbox/` during build.
 
 Available tools:
-- `leave_inline_comment` - Leave line-specific code feedback
-- `leave_general_comment` - Leave overall PR feedback  
+- `leave_inline_review_comment` - Leave line-specific code review feedback
+- `leave_general_review_comment` - Leave overall PR review feedback  
 - `get_pr_comments` - Retrieve existing PR comments
 
 ## Architecture

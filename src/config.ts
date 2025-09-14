@@ -33,6 +33,7 @@ const ConfigSchema = z.object({
       'amp.url': z.string(),
     }),
     prompt_template: z.string(),
+    agents_md_template: z.string(),
   }),
 });
 
