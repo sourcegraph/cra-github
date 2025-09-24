@@ -47,22 +47,11 @@ GitHub App + external service with full API access, queue management, and custom
 
 ### Docker Image (For Actions)
 
-To build and publish the Docker image:
+[Official image](https://github.com/sourcegraph/cra-github/pkgs/container/cra-github) published automatically on GitHub releases. For custom builds:
 
 ```bash
-# Build for GitHub Actions (linux/amd64)
 podman build --platform linux/amd64 -t ghcr.io/your-username/cra-github:latest .
-
-# Push to GitHub Container Registry  
 podman push ghcr.io/your-username/cra-github:latest
-```
-
-Update the workflow file to use your image: `docker://ghcr.io/your-username/cra-github:latest`
-
-Example for the current `review.yml`:
-
-```bash
-podman build -t ghcr.io/sayansisodiya/cra-github:latest . && podman push ghcr.io/sayansisodiya/cra-github:latest
 ```
 
 ### Local Development
