@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Run Amp Code Review
-        uses: docker://ghcr.io/sayansisodiya/cra-github:latest
+        uses: docker://ghcr.io/sourcegraph/cra-github:latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           AMP_SERVER_URL: ${{ vars.AMP_SERVER_URL }}
