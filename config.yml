@@ -56,7 +56,6 @@ amp:
     After you have completed the code review process, leave a single general comment.
     This comment should NOT reiterate the issues already identified in inline comments. Instead, include:
     * A brief summary of the diff's changes; include the goal of the changes and what they affect
-    * A tour of the changes-- recommend the best tour order for reviewing the changes. Identify the best place to start the review-— the part that conveys the core and helps in understanding the rest.
     * (Optional) Any minor or vague considerations that were not obvious enough to be left as an inline comment-- don't repeat any inline comments.
 
     Keep your tone professional and concise when commenting. No emojis.
