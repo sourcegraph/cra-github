@@ -95,7 +95,40 @@ export async function execute(options: ExecuteCommandOptions = {}): Promise<stri
                 
         return stdout;
     } catch (error) {
-        throw new Error(`Failed to execute command: ${error instanceof Error ? error.message : String(error)}`);
+        // Extract more details from the exec error
+        const execError = error as { code: number, stderr: string };
+        const exitCode = execError.code || 'unknown';
+        const stderr = execError.stderr || '';
+        
+        if (logging) {
+            console.log(`[AMP] Command exited with code: ${exitCode}`);
+            if (stderr) {
+                console.log(`[AMP] stderr: ${stderr}`);
+            }
+        }
+        
+        // Handle Amp CLI terminal cleanup behavior:
+        // Amp returns exit code 1 when it runs terminal cleanup (writes cursor control codes to stderr)
+        // even though the actual command execution succeeded. This happens in containerized environments
+        // where Amp detects terminal-like behavior and attempts cleanup on exit.
+        // Rather than trying to prevent this (fragile), we check if the expected output files exist,
+        // which is the semantic definition of success for our use case.
+        if (resultFilePath) {
+            const fs = await import('fs');
+            
+            if (fs.existsSync(resultFilePath)) {
+                if (logging) {
+                    console.log(`[AMP] Result file exists despite exit code ${exitCode}, treating as success`);
+                }
+                try {
+                    return fs.readFileSync(resultFilePath, 'utf8');
+                } catch (readError) {
+                    console.error(`[AMP] Failed to read result file: ${readError}`);
+                }
+            }
+        }
+        
+        throw new Error(`Failed to execute command (exit code ${exitCode}): ${error instanceof Error ? error.message : String(error)}${stderr ? `\nstderr: ${stderr}` : ''}`);
     }
 }
 

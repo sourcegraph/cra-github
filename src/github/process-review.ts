@@ -90,8 +90,8 @@ export async function processReview(
 
     if (fs.existsSync(commentsFilePath)) {
       try {
-        console.log(`Reading collected comments from ${commentsFilePath}`);
         const fileContent = fs.readFileSync(commentsFilePath, 'utf8').trim();
+        console.log(`Found comments file with ${fileContent.length} characters`);
 
         if (fileContent) {
           const commentLines = fileContent.split('\n');

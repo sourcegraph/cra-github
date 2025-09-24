@@ -15,6 +15,9 @@ RUN pnpm run build
 # Runtime stage
 FROM node:20-alpine
 
+# Install GNU coreutils for full env support (needed by npx/Amp CLI)
+RUN apk add --no-cache coreutils
+
 RUN corepack enable
 WORKDIR /app
 
