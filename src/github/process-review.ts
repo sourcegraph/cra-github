@@ -18,6 +18,9 @@ export async function processReview(
       : { installationId }
   );
 
+  // Skip check runs in GitHub Actions mode (workflow provides its own)
+  const manageChecks = process.env.GITHUB_ACTIONS !== 'true';
+
   try {
     // Extract PR information
     const prNumber = payload.pull_request.number;
@@ -35,16 +38,20 @@ export async function processReview(
     // Generate PR URL
     const prUrl = payload.pull_request.html_url;
 
-    // Create check run
-    const checkRun = await githubClient.createCheckRun(owner, repo, commitSha, {
-      name: config.github.check_name,
-      status: CHECK_STATUS.IN_PROGRESS,
-      output: {
-        title: 'Code Review',
-        summary: 'Analyzing changes...',
-      },
-      details_url: prUrl,
-    });
+    // Create check run (only in webhook mode)
+    let checkRunId: number | undefined;
+    if (manageChecks) {
+      const checkRun = await githubClient.createCheckRun(owner, repo, commitSha, {
+        name: config.github.check_name,
+        status: CHECK_STATUS.IN_PROGRESS,
+        output: {
+          title: 'Code Review',
+          summary: 'Analyzing changes...',
+        },
+        details_url: prUrl,
+      });
+      checkRunId = checkRun.id;
+    }
 
     // Get diff content from GitHub API
     console.log('Fetching diff content from GitHub API...');
@@ -53,16 +60,18 @@ export async function processReview(
     if (!diffContent) {
       console.log('No diff content found, completing review without analysis');
       
-      // Update check run with success since there's nothing to review
-      await githubClient.updateCheckRun(owner, repo, checkRun.id, {
-        status: CHECK_STATUS.COMPLETED,
-        conclusion: CHECK_CONCLUSION.SUCCESS,
-        output: {
-          title: 'Code Review Completed',
-          summary: 'No reviewable changes found based on configured file patterns.',
-        },
-        details_url: prUrl,
-      });
+      // Update check run with success since there's nothing to review (only in webhook mode)
+      if (manageChecks && checkRunId) {
+        await githubClient.updateCheckRun(owner, repo, checkRunId, {
+          status: CHECK_STATUS.COMPLETED,
+          conclusion: CHECK_CONCLUSION.SUCCESS,
+          output: {
+            title: 'Code Review Completed',
+            summary: 'No reviewable changes found based on configured file patterns.',
+          },
+          details_url: prUrl,
+        });
+      }
       
       return;
     }
@@ -147,27 +156,31 @@ export async function processReview(
       console.log('No comments file found, skipping review creation');
     }
 
-    // Update check run with success (simplified since review details are now in PR review)
-    await githubClient.updateCheckRun(owner, repo, checkRun.id, {
-      status: CHECK_STATUS.COMPLETED,
-      conclusion: CHECK_CONCLUSION.SUCCESS,
-      output: {
-        title: 'Code Review Completed',
-        summary: 'Code review has been completed successfully. See PR conversation for details.',
-      },
-      details_url: prUrl,
-      actions: [{
-        label: 'Re-run review',
-        description: 'Request a new code review for this PR',
-        identifier: 're-run-review'
-      }]
-    });
+    // Update check run with success (only in webhook mode)
+    if (manageChecks && checkRunId) {
+      await githubClient.updateCheckRun(owner, repo, checkRunId, {
+        status: CHECK_STATUS.COMPLETED,
+        conclusion: CHECK_CONCLUSION.SUCCESS,
+        output: {
+          title: 'Code Review Completed',
+          summary: 'Code review has been completed successfully. See PR conversation for details.',
+        },
+        details_url: prUrl,
+        actions: [{
+          label: 'Re-run review',
+          description: 'Request a new code review for this PR',
+          identifier: 're-run-review'
+        }]
+      });
+    }
 
   } catch (error) {
     console.error(`Review job ${jobId} failed with exception:`, error);
 
-    // Post FAILED check run for exceptions
-    await postFailureCheckRun(githubClient, payload, error instanceof Error ? error.message : String(error));
+    // Post FAILED check run for exceptions (only in webhook mode)
+    if (manageChecks) {
+      await postFailureCheckRun(githubClient, payload, error instanceof Error ? error.message : String(error));
+    }
   }
 }
 
@@ -176,7 +189,7 @@ async function postFailureCheckRun(
   payload: GitHubPullRequestEvent,
   errorMessage: string
 ): Promise<void> {
-  const config = getConfig();
+  const config = await getConfig();
 
   try {
     const commitSha = payload.pull_request.head.sha;
