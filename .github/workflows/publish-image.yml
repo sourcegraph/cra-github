@@ -1,8 +1,8 @@
 name: Build and publish container
 
 on:
-  release:
-    types: [published]
+  push:
+    branches: [main]
 
 permissions:
   contents: read
@@ -29,10 +29,10 @@ jobs:
         with:
           images: ghcr.io/${{ github.repository }}
           tags: |
-            # Use the release tag (e.g., v1.2.3)
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
+            # Auto-increment with date and commit SHA
+            type=sha,prefix={{date 'YYYYMMDD-HHmm'}}-
+            type=ref,event=branch,suffix=-{{sha}}
+            latest
           labels: |
             org.opencontainers.image.title=Amp Code Review Agent
             org.opencontainers.image.description=Code review for GitHub powered by Amp
