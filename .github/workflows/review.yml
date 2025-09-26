@@ -7,6 +7,8 @@ on:
 
 jobs:
   review:
+    # Skip draft PRs unless manually triggered
+    if: ${{ github.event_name != 'pull_request' || !github.event.pull_request.draft }}
     runs-on: ubuntu-latest
 
     # Ensure only one review runs per PR
