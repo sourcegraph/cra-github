@@ -30,9 +30,7 @@ const ConfigSchema = z.object({
   amp: z.object({
     command: z.string(),
     server_url: z.string(),
-    settings: z.object({
-      'amp.url': z.string(),
-    }),
+    settings: z.record(z.any()).optional(),
     prompt_template: z.string(),
   }),
 });
@@ -64,10 +62,13 @@ class ConfigLoader {
 
   private processEnvVars(obj: unknown): unknown {
     if (typeof obj === 'string') {
-      return obj.replace(/\$\{([^}]+)\}/g, (_, envVar) => {
+      return obj.replace(/\$\{([^}]+)\}/g, (_, envVarExpr) => {
+        const [envVar, defaultValue] = envVarExpr.split(':-');
         const value = process.env[envVar];
         if (value) {
           return value;
+        } else if (defaultValue !== undefined) {
+          return defaultValue;
         } else {
           console.warn(`Environment variable ${envVar} not found, keeping placeholder`);
           return `\${${envVar}}`;

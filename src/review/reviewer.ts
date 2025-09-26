@@ -20,7 +20,6 @@ export const reviewDiff = async (
     const tempDir = tmpdir();
     const promptFilePath = join(tempDir, `amp-prompt-${uuidv4()}.txt`);
     const resultFilePath = join(tempDir, `amp-result-${uuidv4()}.txt`);
-    const settingsFilePath = join(tempDir, `amp-settings-${uuidv4()}.json`);
 
   try {      
       // Create prompt content
@@ -42,18 +41,11 @@ export const reviewDiff = async (
       const commentsFileName = `comments-${installationId}-${uuidv4()}.jsonl`;
       const commentsFilePath = join(tempDir, commentsFileName);
 
-      // Write settings to file
-      const settings = { 
-        ...ampConfig.settings
-      };
-      
-      writeFileSync(settingsFilePath, JSON.stringify(settings, null, 2), 'utf8');
 
       const threadId = await newThread(tempDir);
       const result = await execute({
         promptFilePath,
         resultFilePath,
-        settingsFilePath,
         folderPath: tempDir,
         debug: true,
         logging: true,

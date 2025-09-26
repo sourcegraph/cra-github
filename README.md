@@ -32,8 +32,8 @@ The simplest way to add code reviews to any repository:
 
 2. **Configure repository settings**:
    - Go to your repo → Settings → Secrets and variables → Actions
-   - Add **Variable**: `AMP_SERVER_URL` = `https://ampcode.com`
    - Add **Secret**: `AMP_API_KEY` = your Amp API key
+   - (Optional) Add **Variable**: `AMP_SERVER_URL` = `https://ampcode.com` (defaults to https://ampcode.com if not set)
 
 3. **Create a pull request** - reviews will run automatically!
 

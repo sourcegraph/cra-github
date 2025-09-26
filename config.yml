@@ -23,9 +23,7 @@ server:
 
 amp:
   command: "npx --yes @sourcegraph/amp@latest"
-  server_url: "${AMP_SERVER_URL}"
-  settings:
-    amp.url: "${AMP_SERVER_URL}"
+  server_url: "${AMP_SERVER_URL:-https://ampcode.com}"
 
   prompt_template: |
     Review this code diff as a senior developer. Look for bugs, clear logic errors, and code quality problems.
@@ -46,7 +44,9 @@ amp:
     Diff to review:
     __DIFF_CONTENT__
 
-    Use the tools available in the toolbox (prefixed with tb__) while performing your review. Read any existing PR comments before leaving new comments. 
+    IMPORTANT: Always use the tools available in the toolbox (prefixed with tb__) to leave comments while performing your review.
+
+    Read any existing PR comments before leaving new comments. 
 
     Review the diff content to identify issues. If you find any issues, leave specific inline comments for each issue found.
 
