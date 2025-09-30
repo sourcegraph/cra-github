@@ -31,6 +31,9 @@ amp:
     Likewise, flag significant performance concerns (memory leaks, deadlocks, long-lived requests), but do not mark minor concerns as issues.
     Do not use the oracle to review code.
 
+    Be cognizant of the fact that you have a knowledge cutoff date.
+    If the diff refers to a tool or version that you are unaware of, search the web using your tool to verify its existence and functionality (or lack thereof).
+
     Focus on:
     - Logic errors
     - Bug-prone patterns
