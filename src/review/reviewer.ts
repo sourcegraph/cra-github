@@ -25,12 +25,7 @@ export const reviewDiff = async (
       const ampConfig = config.amp;
       
       // Format PR context for prompt
-      const prDetailsContent = `
-        Repository: ${prContext.repository_full_name}\n
-        PR Number: ${prContext.pr_number}\n
-        Commit SHA: ${prContext.commit_sha}\n
-        PR URL: ${prContext.pr_url}\n
-      `;
+      const prDetailsContent = `Repository: ${prContext.repository_full_name}\nPR Number: ${prContext.pr_number}\nCommit SHA: ${prContext.commit_sha}\nPR URL: ${prContext.pr_url}`;
       
       const promptContent = ampConfig.prompt_template
         .replace(/__PR_DETAILS_CONTENT__/g, prDetailsContent)
