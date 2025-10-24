@@ -4,11 +4,6 @@ on:
   pull_request:
     types: [opened, reopened, ready_for_review]
   workflow_dispatch:
-    inputs:
-      pr_number:
-        description: 'PR number to review'
-        required: true
-        type: number
 
 jobs:
   review:
@@ -31,7 +26,7 @@ jobs:
         uses: docker://ghcr.io/sourcegraph/cra-github:latest
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          AMP_SERVER_URL: ${{ vars.AMP_SERVER_URL }}  # Optional, defaults to https://ampcode.com
+          AMP_SERVER_URL: ${{ vars.AMP_SERVER_URL }} # Optional, defaults to https://ampcode.com
           AMP_API_KEY: ${{ secrets.AMP_API_KEY }}
         with:
           args: node /app/dist/bin/review-action.js
