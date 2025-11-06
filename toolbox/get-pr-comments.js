@@ -2,11 +2,24 @@
 
 import fs from 'fs';
 import path from 'path';
-import { pathToFileURL } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 
-// Resolve compiled code from project root → dist/
-const rootDir = path.resolve(process.cwd());
-const distImport = async (rel) => import(pathToFileURL(path.join(rootDir, 'dist', rel)).href);
+// Resolve compiled code relative to script location (not cwd)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const candidateDistDirs = [
+  path.resolve(__dirname, '..'),          // when script is in dist/toolbox
+  path.resolve(__dirname, '..', 'dist'),  // when script is in toolbox/
+  path.resolve(process.cwd(), 'dist'),    // fallback
+];
+
+const distDir = candidateDistDirs.find(d => fs.existsSync(path.join(d, 'config.js')));
+if (!distDir) {
+  throw new Error(`Cannot locate dist/ (searched: ${candidateDistDirs.join(', ')})`);
+}
+
+const distImport = async (rel) => import(pathToFileURL(path.join(distDir, rel)).href);
 
 const action = process.env.TOOLBOX_ACTION;
 

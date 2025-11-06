@@ -1,7 +1,9 @@
-import { readFileSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import * as yaml from 'js-yaml';
 import { config } from 'dotenv';
 import { z } from 'zod';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 // Load environment variables
 config();
@@ -42,8 +44,23 @@ class ConfigLoader {
   private static instance: ConfigLoader;
   private config: Config;
 
+  private resolveConfigPath(): string {
+    const candidates: (string | undefined)[] = [
+      process.env.CONFIG_PATH,
+      process.env.GITHUB_APP_CWD && path.join(process.env.GITHUB_APP_CWD, 'config.yml'),
+      path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', 'config.yml'),
+      path.resolve(process.cwd(), 'config.yml'),
+    ];
+    
+    const found = candidates.filter(Boolean).find(p => existsSync(p as string)) as string | undefined;
+    if (!found) {
+      throw new Error(`config.yml not found. Searched: ${candidates.filter(Boolean).join(', ')}`);
+    }
+    return found;
+  }
+
   private constructor() {
-    const configFile = readFileSync('config.yml', 'utf8');
+    const configFile = readFileSync(this.resolveConfigPath(), 'utf8');
     const rawConfig = yaml.load(configFile);
     const processedConfig = this.processEnvVars(rawConfig);
     this.config = ConfigSchema.parse(processedConfig);
