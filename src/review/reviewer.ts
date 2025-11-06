@@ -46,7 +46,9 @@ export const reviewDiff = async (
         GITHUB_PR_NUMBER: prContext.pr_number.toString(),
         GITHUB_APP_ID: process.env.GITHUB_APP_ID || '',
         GITHUB_APP_PRIVATE_KEY_PATH: process.env.GITHUB_APP_PRIVATE_KEY_PATH || '',
+        GITHUB_APP_PRIVATE_KEY: process.env.GITHUB_APP_PRIVATE_KEY || '',
         GITHUB_APP_CWD: process.env.GITHUB_APP_CWD || '',
+        GITHUB_TOKEN: process.env.GITHUB_TOKEN || '',
       };
 
       // Execute Amp review using SDK
