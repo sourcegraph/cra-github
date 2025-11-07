@@ -207,8 +207,7 @@ The app uses Amp's toolbox feature to provide GitHub operations as simple execut
 
 Available tools:
 - `leave_inline_comment` - Leave line-specific code feedback
-- `leave_general_comment` - Leave overall PR feedback  
-- `get_pr_comments` - Retrieve existing PR comments
+- `leave_general_comment` - Leave overall PR feedback
 
 ## Architecture
 

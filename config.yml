@@ -49,8 +49,6 @@ amp:
 
     IMPORTANT: Always use the tools available in the toolbox (prefixed with tb__) to leave comments while performing your review.
 
-    Read any existing PR comments before leaving new comments. 
-
     Review the diff content to identify issues. If you find any issues, leave specific inline comments for each issue found.
 
     Suggested fixes are optional snippets of code that can directly replace the full line the indicated issue is on for an inline comment.
