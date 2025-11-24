@@ -77,8 +77,8 @@ export const reviewDiff = async (
       }
       console.log('[Amp] Iterator completed');
 
-      // Check if threadId and result are defined
-      if (!threadId || !result) throw new Error('Amp review failed');
+      // Check if threadId is defined (result can be empty when AI only uses tools)
+      if (!threadId) throw new Error('No thread ID received from Amp');
 
       return { success: true, threadId, result, commentsFilePath };
   } catch (error) {
