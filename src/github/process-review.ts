@@ -1,7 +1,7 @@
 import { getConfig } from "../config.js";
 import { reviewDiff } from "../review/reviewer.js";
 import { GitHubClient } from "./client.js";
-import { CHECK_STATUS, CHECK_CONCLUSION, PRContext, GitHubPullRequestEvent } from "./types.js";
+import { CHECK_STATUS, CHECK_CONCLUSION, GitHubPullRequestEvent } from "./types.js";
 
 export async function processReview(
   jobId: string,
@@ -78,75 +78,70 @@ export async function processReview(
 
     console.log(`Retrieved diff content (${diffContent.length} chars)`);
 
-    // Create structured PR context object
-    const prContext: PRContext = {
-      owner,
-      repo,
-      pr_number: prNumber,
-      repository_id: repositoryId,
-      commit_sha: commitSha,
-      pr_url: prUrl,
-      repository_full_name: payload.repository.full_name,
-    };
+    // Context for agent to find PR
+    const prContent = `Repository: ${payload.repository.full_name}\nPR Number: ${prNumber}\nCommit SHA: ${commitSha}\nPR URL: ${prUrl}`;
 
     console.log(`Calling reviewDiff() for job ${jobId}`);
-    const reviewResult = await reviewDiff(diffContent, prContext, installationId);
+    const reviewResult = await reviewDiff(diffContent, prContent, installationId.toString(), {
+      GITHUB_INSTALLATION_ID: installationId.toString(),
+      GITHUB_OWNER: owner,
+      GITHUB_REPO: repo,
+      GITHUB_PR_NUMBER: prNumber.toString(),
+      GITHUB_APP_ID: process.env.GITHUB_APP_ID || '',
+      GITHUB_APP_PRIVATE_KEY_PATH: process.env.GITHUB_APP_PRIVATE_KEY_PATH || '',
+      GITHUB_APP_CWD: process.env.GITHUB_APP_CWD || '',
+    });
     console.log(`Review completed for job ${jobId}`);
 
     // Read collected comments from file
     const fs = await import('fs');
-    const commentsFilePath = reviewResult.commentsFilePath;
+    const commentsContent = reviewResult.commentsContent;
 
-    if (fs.existsSync(commentsFilePath)) {
+    if (commentsContent) {
       try {
-        const fileContent = fs.readFileSync(commentsFilePath, 'utf8').trim();
-        console.log(`Found comments file with ${fileContent.length} characters`);
+        console.log(`Found comments file with ${commentsContent.length} characters`);
 
-        if (fileContent) {
-          const commentLines = fileContent.split('\n');
-          const comments = commentLines.map(line => JSON.parse(line));
+        const commentLines = commentsContent.split('\n');
+        const comments = commentLines.map(line => JSON.parse(line));
 
-          const inlineComments = comments.filter(c => c.type === 'inline');
-          const generalComments = comments.filter(c => c.type === 'general');
+        const inlineComments = comments.filter(c => c.type === 'inline');
+        const generalComments = comments.filter(c => c.type === 'general');
 
-          // TODO(sayans): GitHub API allows <= 30 comments per review, so we need to add splitting logic if there are > 30 comments
+        // TODO(sayans): GitHub API allows <= 30 comments per review, so we need to add splitting logic if there are > 30 comments
 
-          console.log(`Collected ${inlineComments.length} inline comments and ${generalComments.length} general comments`);
+        console.log(`Collected ${inlineComments.length} inline comments and ${generalComments.length} general comments`);
 
-          // Create review summary from general comments
-          let reviewSummary = generalComments.length > 0
-            ? generalComments.map(c => c.message).join('\n\n')
-            : 'Code review completed.';
+        // Create review summary from general comments
+        let reviewSummary = generalComments.length > 0
+          ? generalComments.map(c => c.message).join('\n\n')
+          : 'Code review completed.';
 
-          // Append Amp thread URL if available
-          if (reviewResult.threadId && config.amp.server_url) {
-            const threadUrl = `${config.amp.server_url}/threads/${reviewResult.threadId}`;
-            reviewSummary += `\n\n[View this review on Amp](${threadUrl})`;
-          }
-
-          // Post aggregated review
-          console.log('Posting aggregated PR review...');
-          await githubClient.createPRReview(
-            owner,
-            repo,
-            prNumber,
-            reviewSummary,
-            'COMMENT',
-            inlineComments.map(comment => ({
-              path: comment.path,
-              line: comment.line,
-              body: comment.suggested_fix
-                ? `${comment.message}\n\n\`\`\`suggestion\n${comment.suggested_fix}\n\`\`\``
-                : comment.message
-            }))
-          );
-          console.log('PR review posted successfully');
-        } else {
-          console.log('No comments collected, skipping review creation');
+        // Append Amp thread URL if available
+        if (reviewResult.threadId && config.amp.server_url) {
+          const threadUrl = `${config.amp.server_url}/threads/${reviewResult.threadId}`;
+          reviewSummary += `\n\n[View this review on Amp](${threadUrl})`;
         }
 
+        // Post aggregated review
+        console.log('Posting aggregated PR review...');
+        await githubClient.createPRReview(
+          owner,
+          repo,
+          prNumber,
+          reviewSummary,
+          'COMMENT',
+          inlineComments.map(comment => ({
+            path: comment.path,
+            line: comment.line,
+            body: comment.suggested_fix
+              ? `${comment.message}\n\n\`\`\`suggestion\n${comment.suggested_fix}\n\`\`\``
+              : comment.message
+          }))
+        );
+        console.log('PR review posted successfully');
+
         // Clean up the comments file
-        fs.unlinkSync(commentsFilePath);
+        fs.unlinkSync(reviewResult.commentsFilePath);
         console.log('Cleaned up comments file');
 
       } catch (error) {
